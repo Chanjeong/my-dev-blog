@@ -19,7 +19,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="fixed top-4 right-4 p-3 rounded-lg bg-bg-primary dark:bg-bg-primary transition-colors duration-200"
+      className="fixed top-4 right-4 p-3 rounded-lg bg-bg-primary dark:bg-bg-primary "
       aria-label="Toggle theme">
       {theme === 'dark' ? (
         <SunIcon className="h-6 w-6 text-yellow-500" />
