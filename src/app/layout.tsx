@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, Noto_Serif_KR } from 'next/font/google';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import Navigation from '@/components/Navigation';
 import './globals.css';
-import ThemeToggle from '@/components/ThemeToggle';
+import AutoPlayAudio from '@/components/AutoPlayAudio';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -12,6 +13,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin']
+});
+
+const notoSerifKR = Noto_Serif_KR({
+  variable: '--font-noto-serif-kr',
+  subsets: ['latin'],
+  weight: ['400', '700']
 });
 
 export const metadata: Metadata = {
@@ -25,13 +32,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        className={`${geistSans.variable} ${geistMono.variable} ${notoSerifKR.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <ThemeToggle />
+          <Navigation />
           {children}
         </ThemeProvider>
+        <AutoPlayAudio src="/music/myself.mp3" loop={true} />
       </body>
     </html>
   );

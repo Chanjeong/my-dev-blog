@@ -9,6 +9,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'noto-serif-kr': ['var(--font-noto-serif-kr)', 'serif']
+      },
+
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
