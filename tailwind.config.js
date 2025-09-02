@@ -1,5 +1,8 @@
+import tailwindcssAnimate from 'tailwindcss-animate';
+import tailwindcssLineClamp from '@tailwindcss/line-clamp';
+
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   darkMode: ['class'],
   content: [
     './pages/**/*.{ts,tsx}',
@@ -24,9 +27,38 @@ module.exports = {
           DEFAULT: 'var(--muted)',
           foreground: 'var(--muted-foreground)'
         },
-        border: 'var(--border)'
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)'
+        },
+        secondary: {
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)'
+        },
+        accent: {
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)'
+        },
+        popover: {
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)'
+        },
+        card: {
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)'
+        }
+      },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)'
       }
     }
   },
-  plugins: []
+  plugins: [tailwindcssAnimate, tailwindcssLineClamp]
 };
+
+export default config;
