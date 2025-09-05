@@ -62,11 +62,13 @@ export default function Navigation() {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <Link href="/contact" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/contact"
+                    className={navigationMenuTriggerStyle()}>
                     Contact
-                  </NavigationMenuLink>
-                </Link>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>

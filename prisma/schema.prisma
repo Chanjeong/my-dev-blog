@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 게시글 모델
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  excerpt   String?
+  slug      String   @unique
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tags      String // JSON 문자열로 저장
+  viewCount Int      @default(0)
+
+  @@map("posts")
+}
+
+// 연락처 메시지 모델
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+  read      Boolean  @default(false)
+
+  @@map("contact_messages")
+}
+
+// 관리자 인증 모델
+model Admin {
+  id        String   @id @default(cuid())
+  password  String
+  createdAt DateTime @default(now())
+
+  @@map("admins")
+}
