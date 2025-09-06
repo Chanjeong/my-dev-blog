@@ -7,11 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "change-password": "node scripts/change-password.js"
+    "change-password": "node scripts/change-password.js",
+    "setup-admin": "node scripts/setup-admin.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.15.0",
+    "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-navigation-menu": "^1.2.14",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/line-clamp": "^0.4.4",
