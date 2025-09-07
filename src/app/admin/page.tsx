@@ -1,72 +1,29 @@
-'use client';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import jwt from 'jsonwebtoken';
+import AdminLoginForm from '@/components/admin/AdminLoginForm';
+import { JWTPayload } from '@/types/jwt';
 
-import { useActionState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { loginAction } from './actions';
-import { LoginState } from '@/types/admin';
+export default async function AdminLoginPage() {
+  // 서버에서 쿠키 확인 (SSR)
+  const cookieStore = await cookies();
+  const token = cookieStore.get('admin-token')?.value;
 
-export default function AdminLoginPage() {
-  const [state, formAction, isPending] = useActionState<LoginState, FormData>(
-    loginAction,
-    {
-      success: false,
-      error: null
+  if (token) {
+    try {
+      // JWT 토큰 검증
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
+
+      // 토큰이 유효하면 dashboard로 리다이렉트
+      if (decoded.adminId && decoded.role === 'admin') {
+        redirect('/admin/dashboard');
+      }
+    } catch (error) {
+      // JWT 검증 실패 (토큰이 유효하지 않음)
+      // 로그인 페이지를 표시하기 위해 계속 진행
     }
-  );
-  const router = useRouter();
+  }
 
-  useEffect(() => {
-    if (state.success) {
-      router.push('/admin/dashboard');
-    }
-  }, [state.success, router]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">관리자 로그인</CardTitle>
-          <CardDescription>
-            개발 블로그 관리 페이지에 접속하세요
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={formAction} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">비밀번호</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="관리자 비밀번호를 입력하세요"
-                required
-                disabled={isPending}
-              />
-            </div>
-
-            {state.error && (
-              <Alert variant="destructive">
-                <AlertDescription>{state.error}</AlertDescription>
-              </Alert>
-            )}
-
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? '로그인 중...' : '로그인'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  // 로그인 페이지 표시
+  return <AdminLoginForm />;
 }
