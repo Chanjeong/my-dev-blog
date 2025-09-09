@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Card,
   CardContent,
@@ -10,6 +8,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, Upload, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '관리자 대시보드 | 개발 블로그',
+  description: '블로그와 파일을 관리하는 관리자 대시보드입니다.',
+  robots: 'noindex, nofollow' // 관리자 페이지는 검색엔진에서 제외
+};
 
 export default function AdminDashboard() {
   return (
@@ -21,7 +26,6 @@ export default function AdminDashboard() {
             <p className="text-muted-foreground">블로그와 파일을 관리하세요</p>
           </div>
 
-          {/* 통계 카드 */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -70,7 +74,6 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          {/* 빠른 액션 버튼들 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
@@ -82,7 +85,9 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full">포스트 작성하기</Button>
+                <Link href="/admin/dashboard/write">
+                  <Button className="w-full">포스트 작성하기</Button>
+                </Link>
               </CardContent>
             </Card>
 
@@ -121,7 +126,6 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          {/* 최근 포스트 목록 */}
           <Card>
             <CardHeader>
               <CardTitle>최근 포스트</CardTitle>
@@ -131,7 +135,6 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* 포스트 목록이 여기에 들어갈 예정 */}
                 <div className="text-center text-muted-foreground py-8">
                   아직 작성된 포스트가 없습니다.
                 </div>

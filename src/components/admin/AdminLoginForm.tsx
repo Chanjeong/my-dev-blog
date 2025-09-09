@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,6 @@ import { loginAction } from '@/app/admin/actions';
 import { LoginState } from '@/types/admin';
 
 export default function AdminLoginForm() {
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [state, formAction, isPending] = useActionState<LoginState, FormData>(
     loginAction,
     {
@@ -27,47 +26,11 @@ export default function AdminLoginForm() {
   );
   const router = useRouter();
 
-  // 인증 확인 및 로그인 성공 처리
   useEffect(() => {
-    // 로그인 성공 시 dashboard로 이동
     if (state.success) {
       router.push('/admin/dashboard');
-      return;
     }
-
-    // 컴포넌트 마운트 시 인증 확인
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/check', {
-          method: 'GET',
-          credentials: 'include'
-        });
-
-        if (response.ok) {
-          router.push('/admin/dashboard');
-        } else {
-          setIsCheckingAuth(false);
-        }
-      } catch (error) {
-        console.error('인증 확인 오류:', error);
-        setIsCheckingAuth(false);
-      }
-    };
-
-    checkAuth();
   }, [state.success, router]);
-
-  // 인증 확인 중이면 로딩 표시
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">인증 확인 중...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
