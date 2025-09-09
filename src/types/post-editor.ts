@@ -32,3 +32,21 @@ export const initialPostFormState: PostFormData = {
   tagInput: ''
 };
 
+export interface PostFormState {
+  success: boolean;
+  error: string | null;
+  postId?: string;
+}
+
+// BlockNote 블록 타입 정의
+export interface BlockNoteContent {
+  type: 'text';
+  text: string;
+  styles?: Record<string, boolean>;
+}
+
+export interface BlockNoteBlock {
+  type: string;
+  content?: BlockNoteContent[];
+  id?: string;
+}

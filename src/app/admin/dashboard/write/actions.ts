@@ -5,27 +5,30 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { JWTPayload } from '@/types/jwt';
 import slugify from 'slugify';
+import {
+  BlockNoteBlock,
+  BlockNoteContent,
+  PostFormState
+} from '@/types/post-editor';
 
-export interface PostFormState {
-  success: boolean;
-  error: string | null;
-  postId?: string;
-}
+// export interface PostFormState {
+//   success: boolean;
+//   error: string | null;
+//   postId?: string;
+// }
 
-// BlockNote 블록 타입 정의
-interface BlockNoteContent {
-  type: 'text';
-  text: string;
-  styles?: Record<string, boolean>;
-}
+// // BlockNote 블록 타입 정의
+// interface BlockNoteContent {
+//   type: 'text';
+//   text: string;
+//   styles?: Record<string, boolean>;
+// }
 
-interface BlockNoteBlock {
-  type: string;
-  content?: BlockNoteContent[];
-  id?: string;
-}
-
-type BlockNoteDocument = BlockNoteBlock[];
+// interface BlockNoteBlock {
+//   type: string;
+//   content?: BlockNoteContent[];
+//   id?: string;
+// }
 
 // 관리자 인증 확인
 async function checkAuth(): Promise<boolean> {
@@ -105,7 +108,7 @@ export async function savePostAction(
     // BlockNote content를 텍스트로 변환하여 excerpt 생성
     let textContent = '';
     try {
-      const blocks: BlockNoteDocument = JSON.parse(content);
+      const blocks: BlockNoteBlock[] = JSON.parse(content);
       textContent = blocks
         .map((block: BlockNoteBlock) => {
           if (block.type === 'paragraph' && block.content) {

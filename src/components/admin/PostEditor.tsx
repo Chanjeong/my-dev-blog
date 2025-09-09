@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,16 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { X, Save } from 'lucide-react';
-import { useCreateBlockNote } from '@blocknote/react';
-import { BlockNoteView } from '@blocknote/mantine';
-import '@blocknote/core/fonts/inter.css';
-import '@blocknote/mantine/style.css';
-import {
-  savePostAction,
-  PostFormState
-} from '@/app/admin/dashboard/write/actions';
+import { Editor } from '@/components/DynamicEditor';
+import { savePostAction } from '@/app/admin/dashboard/write/actions';
 import { usePostForm } from '@/hooks/usePostForm';
-import { PostEditorProps } from '@/types/post-editor';
+import { PostEditorProps, PostFormState } from '@/types/post-editor';
 
 export default function PostEditor({ initialData }: PostEditorProps) {
   const [state, formAction, isPending] = useActionState<
@@ -35,31 +30,19 @@ export default function PostEditor({ initialData }: PostEditorProps) {
       published: initialData?.published || false
     });
 
-  // BlockNote 에디터 설정
-  const editor = useCreateBlockNote({
-    initialContent: formData.content ? JSON.parse(formData.content) : undefined
-  });
+  // ThemeProvider에서 다크모드 상태 가져오기
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
-  // 에디터 내용 변경 감지
-  useEffect(() => {
-    if (editor) {
-      const handleChange = () => {
-        const blocks = editor.document;
-        dispatch({
-          type: 'SET_FIELD',
-          field: 'content',
-          value: JSON.stringify(blocks)
-        });
-      };
-
-      // BlockNote의 올바른 이벤트 리스너 등록
-      editor.onEditorContentChange = handleChange;
-
-      return () => {
-        // cleanup - BlockNote는 자동으로 정리됨
-      };
-    }
-  }, [editor, dispatch]);
+  // 에디터 내용 변경 핸들러
+  const handleEditorChange = (editor: { document: any[] }) => {
+    const blocks = editor.document;
+    dispatch({
+      type: 'SET_FIELD',
+      field: 'content',
+      value: JSON.stringify(blocks)
+    });
+  };
 
   // 성공 시 처리
   useEffect(() => {
@@ -131,7 +114,15 @@ export default function PostEditor({ initialData }: PostEditorProps) {
                     <div className="space-y-2">
                       <Label>내용 *</Label>
                       <div className="min-h-[500px] border rounded-md">
-                        <BlockNoteView editor={editor} />
+                        <Editor
+                          initialContent={
+                            formData.content
+                              ? JSON.parse(formData.content)
+                              : undefined
+                          }
+                          onChange={handleEditorChange}
+                          isDark={isDark}
+                        />
                       </div>
                       <input
                         type="hidden"
@@ -187,9 +178,6 @@ export default function PostEditor({ initialData }: PostEditorProps) {
                         placeholder="태그를 입력하고 쉼표(,)로 구분하세요"
                         disabled={isPending}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        예: React, Next.js, TypeScript
-                      </p>
                     </div>
 
                     {tagArray.length > 0 && (
