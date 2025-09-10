@@ -5,32 +5,8 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { JWTPayload } from '@/types/jwt';
 import slugify from 'slugify';
-import {
-  BlockNoteBlock,
-  BlockNoteContent,
-  PostFormState
-} from '@/types/post-editor';
+import { PostFormState } from '@/types/post-editor';
 
-// export interface PostFormState {
-//   success: boolean;
-//   error: string | null;
-//   postId?: string;
-// }
-
-// // BlockNote 블록 타입 정의
-// interface BlockNoteContent {
-//   type: 'text';
-//   text: string;
-//   styles?: Record<string, boolean>;
-// }
-
-// interface BlockNoteBlock {
-//   type: string;
-//   content?: BlockNoteContent[];
-//   id?: string;
-// }
-
-// 관리자 인증 확인
 async function checkAuth(): Promise<boolean> {
   try {
     const cookieStore = await cookies();
@@ -58,7 +34,6 @@ export async function savePostAction(
 
   const title = formData.get('title') as string;
   const content = formData.get('content') as string;
-  const tags = formData.get('tags') as string;
   const published = formData.get('published') === 'true';
   const postId = formData.get('postId') as string;
 
@@ -96,34 +71,9 @@ export async function savePostAction(
       counter++;
     }
 
-    // 태그 처리 (JSON 문자열로 저장)
-    const tagArray = tags
-      ? tags
-          .split(',')
-          .map(tag => tag.trim())
-          .filter(Boolean)
-      : [];
-    const tagsJson = JSON.stringify(tagArray);
-
-    // BlockNote content를 텍스트로 변환하여 excerpt 생성
-    let textContent = '';
-    try {
-      const blocks: BlockNoteBlock[] = JSON.parse(content);
-      textContent = blocks
-        .map((block: BlockNoteBlock) => {
-          if (block.type === 'paragraph' && block.content) {
-            return block.content
-              .map((item: BlockNoteContent) => item.text || '')
-              .join('');
-          }
-          return '';
-        })
-        .join(' ')
-        .replace(/[#*`]/g, '');
-    } catch {
-      textContent = content.replace(/[#*`]/g, '');
-    }
-    const generatedExcerpt = textContent.substring(0, 150) + '...';
+    const textContent = content.replace(/[#*`\[\]()]/g, '').substring(0, 150);
+    const generatedExcerpt =
+      textContent + (textContent.length >= 150 ? '...' : '');
 
     if (postId) {
       // 포스트 수정
@@ -135,7 +85,6 @@ export async function savePostAction(
           excerpt: generatedExcerpt,
           slug,
           published,
-          tags: tagsJson,
           updatedAt: new Date()
         }
       });
@@ -149,8 +98,7 @@ export async function savePostAction(
           content: content.trim(),
           excerpt: generatedExcerpt,
           slug,
-          published,
-          tags: tagsJson
+          published
         }
       });
 

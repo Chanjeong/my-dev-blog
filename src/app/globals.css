@@ -79,13 +79,3 @@ body {
     '맑은 고딕', serif;
 }
 
-/* BlockNote 에디터 높이 설정 */
-.bn-editor {
-  height: 100% !important;
-  min-height: 500px !important;
-}
-
-.bn-container {
-  height: 100% !important;
-  min-height: 500px !important;
-}

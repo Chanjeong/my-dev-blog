@@ -20,7 +20,6 @@ model Post {
   published Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  tags      String // JSON 문자열로 저장
   viewCount Int      @default(0)
 
   @@map("posts")

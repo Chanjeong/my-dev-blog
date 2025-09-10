@@ -1,5 +1,6 @@
 import tailwindcssAnimate from 'tailwindcss-animate';
 import tailwindcssLineClamp from '@tailwindcss/line-clamp';
+import tailwindcssTypography from '@tailwindcss/typography';
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -58,7 +59,7 @@ const config = {
       }
     }
   },
-  plugins: [tailwindcssAnimate, tailwindcssLineClamp]
+  plugins: [tailwindcssAnimate, tailwindcssLineClamp, tailwindcssTypography]
 };
 
 export default config;

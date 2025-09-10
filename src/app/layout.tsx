@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Noto_Serif_KR } from 'next/font/google';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import Navigation from '@/components/Navigation';
 import './globals.css';
-import AutoPlayAudio from '@/components/AutoPlayAudio';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -39,7 +38,6 @@ export default function RootLayout({
           <Navigation />
           {children}
         </ThemeProvider>
-        <AutoPlayAudio src="/music/myself.mp3" loop={true} />
       </body>
     </html>
   );
