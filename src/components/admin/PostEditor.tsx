@@ -92,7 +92,6 @@ export default function PostEditor({ initialData }: PostEditorProps) {
               </CardContent>
             </Card>
 
-            {/* 내용 에디터 - MDEditor */}
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">

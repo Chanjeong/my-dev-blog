@@ -71,10 +71,6 @@ export async function savePostAction(
       counter++;
     }
 
-    const textContent = content.replace(/[#*`\[\]()]/g, '').substring(0, 150);
-    const generatedExcerpt =
-      textContent + (textContent.length >= 150 ? '...' : '');
-
     if (postId) {
       // 포스트 수정
       await prisma.post.update({
@@ -82,7 +78,6 @@ export async function savePostAction(
         data: {
           title: title.trim(),
           content: content.trim(),
-          excerpt: generatedExcerpt,
           slug,
           published,
           updatedAt: new Date()
@@ -96,7 +91,6 @@ export async function savePostAction(
         data: {
           title: title.trim(),
           content: content.trim(),
-          excerpt: generatedExcerpt,
           slug,
           published
         }

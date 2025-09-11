@@ -1,16 +1,25 @@
-export interface PostFormData {
+export interface Post {
+  id: string;
   title: string;
   content: string;
+  slug: string;
   published: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
+export type PostListItem = Omit<Post, 'content'>;
+
+export type PostFormData = Pick<Post, 'title' | 'content' | 'published'>;
+
+export type PostEditorInitialData = Pick<Post, 'id'> & Partial<PostFormData>;
+
 export interface PostEditorProps {
-  initialData?: {
-    id?: string;
-    title?: string;
-    content?: string;
-    published?: boolean;
-  };
+  initialData?: PostEditorInitialData;
+}
+
+export interface PostListProps {
+  posts: PostListItem[];
 }
 
 export type PostFormAction =
@@ -22,7 +31,6 @@ export const initialPostFormState: PostFormData = {
   content: '',
   published: false
 };
-
 export interface PostFormState {
   success: boolean;
   error: string | null;

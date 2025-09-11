@@ -1,21 +1,13 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { Calendar, Eye } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 interface BlogPost {
   id: string;
   title: string;
-  excerpt: string | null;
   slug: string;
   createdAt: Date;
-  viewCount: number;
 }
 
 async function getPublishedPosts(): Promise<BlogPost[]> {
@@ -25,10 +17,8 @@ async function getPublishedPosts(): Promise<BlogPost[]> {
       select: {
         id: true,
         title: true,
-        excerpt: true,
         slug: true,
-        createdAt: true,
-        viewCount: true
+        createdAt: true
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -64,9 +54,6 @@ export default async function CardContainer() {
               <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
                 {post.title}
               </CardTitle>
-              <CardDescription className="line-clamp-3">
-                {post.excerpt || '요약이 없습니다.'}
-              </CardDescription>
             </CardHeader>
             <CardContent>
               {/* 메타 정보 */}
@@ -80,10 +67,6 @@ export default async function CardContainer() {
                       day: 'numeric'
                     })}
                   </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Eye className="w-3 h-3" />
-                  <span>{post.viewCount}</span>
                 </div>
               </div>
             </CardContent>

@@ -15,7 +15,7 @@ import PostList from '@/components/admin/PostList';
 export const metadata: Metadata = {
   title: '관리자 대시보드 | 개발 블로그',
   description: '블로그와 파일을 관리하는 관리자 대시보드입니다.',
-  robots: 'noindex, nofollow' // 관리자 페이지는 검색엔진에서 제외
+  robots: 'noindex, nofollow'
 };
 
 // 게시글 데이터 가져오기
@@ -26,12 +26,10 @@ async function getPosts() {
       select: {
         id: true,
         title: true,
-        excerpt: true,
         slug: true,
         published: true,
         createdAt: true,
-        updatedAt: true,
-        viewCount: true
+        updatedAt: true
       }
     });
 
@@ -50,29 +48,23 @@ async function getPosts() {
 // 통계 데이터 가져오기
 async function getStats() {
   try {
-    const [totalPosts, publishedPosts, draftPosts, totalViews] =
-      await Promise.all([
-        prisma.post.count(),
-        prisma.post.count({ where: { published: true } }),
-        prisma.post.count({ where: { published: false } }),
-        prisma.post.aggregate({
-          _sum: { viewCount: true }
-        })
-      ]);
+    const [totalPosts, publishedPosts, draftPosts] = await Promise.all([
+      prisma.post.count(),
+      prisma.post.count({ where: { published: true } }),
+      prisma.post.count({ where: { published: false } })
+    ]);
 
     return {
       totalPosts,
       publishedPosts,
-      draftPosts,
-      totalViews: totalViews._sum.viewCount || 0
+      draftPosts
     };
   } catch (error) {
     console.error('통계 데이터 가져오기 오류:', error);
     return {
       totalPosts: 0,
       publishedPosts: 0,
-      draftPosts: 0,
-      totalViews: 0
+      draftPosts: 0
     };
   }
 }
@@ -90,7 +82,7 @@ export default async function AdminDashboard() {
           </div>
 
           {/* 통계 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">총 포스트</CardTitle>
@@ -134,25 +126,6 @@ export default async function AdminDashboard() {
                 <div className="text-2xl font-bold">{stats.draftPosts}</div>
                 <p className="text-xs text-muted-foreground">
                   {stats.draftPosts > 0 ? '작성 완료 대기' : '모두 발행됨'}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">총 조회수</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats.totalViews.toLocaleString()}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  평균{' '}
-                  {stats.publishedPosts > 0
-                    ? Math.round(stats.totalViews / stats.publishedPosts)
-                    : 0}
-                  회/포스트
                 </p>
               </CardContent>
             </Card>
@@ -211,7 +184,6 @@ export default async function AdminDashboard() {
             </Card>
           </div>
 
-          {/* 게시글 목록 */}
           <Card>
             <CardHeader>
               <CardTitle>최근 포스트</CardTitle>

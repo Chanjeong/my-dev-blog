@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   Edit,
   Trash2,
-  Eye,
   Calendar,
   CheckCircle,
   Clock,
@@ -15,21 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { deletePostAction } from '@/app/admin/dashboard/write/actions';
-
-interface Post {
-  id: string;
-  title: string;
-  excerpt: string | null;
-  slug: string;
-  published: boolean;
-  createdAt: string;
-  updatedAt: string;
-  viewCount: number;
-}
-
-interface PostListProps {
-  posts: Post[];
-}
+import { PostListProps } from '@/types/post-editor';
 
 export default function PostList({ posts }: PostListProps) {
   const [localPosts, setLocalPosts] = useState(posts);
@@ -106,18 +91,10 @@ export default function PostList({ posts }: PostListProps) {
                     )}
                   </div>
 
-                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                    {post.excerpt || '요약이 없습니다.'}
-                  </p>
-
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       {formatDate(post.createdAt)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      {post.viewCount}회 조회
                     </div>
                   </div>
                 </div>
