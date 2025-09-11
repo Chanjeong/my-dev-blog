@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PasswordChangeForm from '@/components/admin/PasswordChangeForm';
 import { Metadata } from 'next';
 
@@ -19,19 +13,9 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-background">
       <main className="pt-24 px-6">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">설정</h1>
-            <p className="text-muted-foreground">
-              블로그 관리자 설정을 변경하세요
-            </p>
-          </div>
-
           <Card>
             <CardHeader>
               <CardTitle>비밀번호 변경</CardTitle>
-              <CardDescription>
-                보안을 위해 정기적으로 비밀번호를 변경하세요
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <PasswordChangeForm />
