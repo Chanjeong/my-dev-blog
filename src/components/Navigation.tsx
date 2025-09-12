@@ -10,7 +10,6 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle
 } from '@/components/ui/navigation-menu';
-
 export default function Navigation() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();

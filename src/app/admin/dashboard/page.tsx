@@ -132,7 +132,7 @@ export default async function AdminDashboard() {
           </div>
 
           {/* 액션 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -146,23 +146,6 @@ export default async function AdminDashboard() {
                 <Link href="/admin/dashboard/write">
                   <Button className="w-full">포스트 작성하기</Button>
                 </Link>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Upload className="h-5 w-5" />
-                  파일 관리
-                </CardTitle>
-                <CardDescription>
-                  Portfolio, Resume 파일을 관리하세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" className="w-full">
-                  파일 관리
-                </Button>
               </CardContent>
             </Card>
 
