@@ -6,7 +6,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, FileText, Upload, Settings } from 'lucide-react';
+import { Plus, FileText, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
