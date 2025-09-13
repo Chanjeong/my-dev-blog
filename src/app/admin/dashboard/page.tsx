@@ -6,7 +6,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, FileText, Settings } from 'lucide-react';
+import { Plus, FileText, Settings, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
@@ -18,63 +18,48 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow'
 };
 
-// 게시글 데이터 가져오기
-async function getPosts() {
+// 모든 데이터를 한 번에 가져오기 (관리자용 최적화)
+async function getDashboardData() {
   try {
-    const posts = await prisma.post.findMany({
-      orderBy: { updatedAt: 'desc' },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        published: true,
-        createdAt: true,
-        updatedAt: true
-      }
+    const allPosts = await prisma.post.findMany({
+      orderBy: { updatedAt: 'desc' }
     });
 
-    // Date 객체를 문자열로 변환
-    return posts.map(post => ({
+    // 통계 계산
+    const totalPosts = allPosts.length;
+    const publishedCount = allPosts.filter(post => post.published).length;
+    const draftCount = allPosts.filter(post => !post.published).length;
+
+    // 최근 5개 게시글 (Date 객체를 문자열로 변환)
+    const recentPosts = allPosts.slice(0, 5).map(post => ({
       ...post,
       createdAt: post.createdAt.toISOString(),
       updatedAt: post.updatedAt.toISOString()
     }));
-  } catch (error) {
-    console.error('게시글 데이터 가져오기 오류:', error);
-    return [];
-  }
-}
-
-// 통계 데이터 가져오기
-async function getStats() {
-  try {
-    const [totalPosts, publishedPosts, draftPosts] = await Promise.all([
-      prisma.post.count(),
-      prisma.post.count({ where: { published: true } }),
-      prisma.post.count({ where: { published: false } })
-    ]);
 
     return {
-      totalPosts,
-      publishedPosts,
-      draftPosts
+      stats: {
+        totalPosts,
+        publishedPosts: publishedCount,
+        draftPosts: draftCount
+      },
+      recentPosts
     };
   } catch (error) {
-    console.error('통계 데이터 가져오기 오류:', error);
+    console.error('대시보드 데이터 가져오기 오류:', error);
     return {
-      totalPosts: 0,
-      publishedPosts: 0,
-      draftPosts: 0
+      stats: { totalPosts: 0, publishedPosts: 0, draftPosts: 0 },
+      recentPosts: []
     };
   }
 }
 
 export default async function AdminDashboard() {
-  const [posts, stats] = await Promise.all([getPosts(), getStats()]);
+  const { stats, recentPosts } = await getDashboardData();
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="pt-24 px-6">
+      <main className="pt-6 px-6">
         <div className="max-w-6xl mx-auto space-y-6">
           <div>
             <h1 className="text-3xl font-bold">관리자 대시보드</h1>
@@ -132,7 +117,7 @@ export default async function AdminDashboard() {
           </div>
 
           {/* 액션 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -145,6 +130,25 @@ export default async function AdminDashboard() {
               <CardContent>
                 <Link href="/admin/dashboard/write">
                   <Button className="w-full">포스트 작성하기</Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  파일 관리
+                </CardTitle>
+                <CardDescription>
+                  이력서와 포트폴리오를 관리하세요
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/admin/dashboard/files">
+                  <Button variant="outline" className="w-full">
+                    파일 관리
+                  </Button>
                 </Link>
               </CardContent>
             </Card>
@@ -175,7 +179,7 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PostList posts={posts} />
+              <PostList posts={recentPosts} />
             </CardContent>
           </Card>
         </div>

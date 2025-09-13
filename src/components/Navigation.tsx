@@ -10,12 +10,38 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle
 } from '@/components/ui/navigation-menu';
+import { getActiveFiles } from '@/app/admin/dashboard/files/actions';
 export default function Navigation() {
   const [mounted, setMounted] = useState(false);
+  const [fileUrls, setFileUrls] = useState<{
+    resume: string | null;
+    portfolio: string | null;
+  }>({ resume: null, portfolio: null });
   const { theme, setTheme } = useTheme();
+
+  const fetchFileUrls = async () => {
+    try {
+      const result = await getActiveFiles();
+      if (result.success && result.data) {
+        setFileUrls(result.data);
+      }
+    } catch (error) {
+      console.error('파일 URL 가져오기 실패:', error);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
+    fetchFileUrls();
+  }, []);
+
+  useEffect(() => {
+    const handleFileUpdate = () => {
+      fetchFileUrls();
+    };
+
+    window.addEventListener('fileUpdated', handleFileUpdate);
+    return () => window.removeEventListener('fileUpdated', handleFileUpdate);
   }, []);
 
   if (!mounted) {
@@ -39,7 +65,7 @@ export default function Navigation() {
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
                   <a
-                    href="/info/portfolio.pdf"
+                    href={fileUrls.portfolio!}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={navigationMenuTriggerStyle()}>
@@ -51,7 +77,7 @@ export default function Navigation() {
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
                   <a
-                    href="/info/resume.pdf"
+                    href={fileUrls.resume!}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={navigationMenuTriggerStyle()}>
