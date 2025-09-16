@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { JWTPayload } from '@/types/jwt';
-import slugify from 'slugify';
+// slugify import 제거 - 한글 친화적 slug 생성 함수 사용
 import { PostFormState } from '@/types/post-editor';
 
 async function checkAuth(): Promise<boolean> {
@@ -22,10 +22,7 @@ async function checkAuth(): Promise<boolean> {
 }
 
 // 포스트 생성/수정
-export async function savePostAction(
-  prevState: PostFormState,
-  formData: FormData
-): Promise<PostFormState> {
+export async function savePostAction(prevState: PostFormState, formData: FormData): Promise<PostFormState> {
   // 인증 확인
   const isAuthenticated = await checkAuth();
   if (!isAuthenticated) {
@@ -46,12 +43,17 @@ export async function savePostAction(
   }
 
   try {
+    // 한글 친화적인 슬러그 생성 함수
+    const createSlug = (text: string): string => {
+      return text
+        .toLowerCase()
+        .replace(/[^\w\s가-힣]/g, '') // 한글, 영문, 숫자, 공백만 남김
+        .replace(/\s+/g, '-') // 공백을 하이픈으로
+        .trim();
+    };
+
     // 슬러그 생성 (제목 기반)
-    const baseSlug = slugify(title, {
-      lower: true,
-      strict: true,
-      locale: 'ko'
-    });
+    const baseSlug = createSlug(title);
 
     // 고유한 슬러그 생성
     let slug = baseSlug;
@@ -60,7 +62,7 @@ export async function savePostAction(
     while (true) {
       const existingPost = await prisma.post.findUnique({
         where: { slug },
-        select: { id: true }
+        select: { id: true },
       });
 
       if (!existingPost || existingPost.id === postId) {
@@ -80,8 +82,8 @@ export async function savePostAction(
           content: content.trim(),
           slug,
           published,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       return { success: true, error: null, postId };
@@ -92,8 +94,8 @@ export async function savePostAction(
           title: title.trim(),
           content: content.trim(),
           slug,
-          published
-        }
+          published,
+        },
       });
 
       return { success: true, error: null, postId: newPost.id };
@@ -113,7 +115,7 @@ export async function deletePostAction(postId: string): Promise<PostFormState> {
 
   try {
     await prisma.post.delete({
-      where: { id: postId }
+      where: { id: postId },
     });
 
     return { success: true, error: null };

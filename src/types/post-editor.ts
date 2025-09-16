@@ -1,38 +1,46 @@
+// 기본 Post 타입 (데이터베이스용)
 export interface Post {
   id: string;
   title: string;
   content: string;
   slug: string;
   published: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export type PostListItem = Omit<Post, 'content'>;
+// 포스트 목록용 (content 제외)
+export type PostList = Omit<Post, 'content'>;
 
-export type PostFormData = Pick<Post, 'title' | 'content' | 'published'>;
+// 썸네일 추출용 (content 포함하지만 최소한만)
+export type PostWithThumbnail = Pick<Post, 'id' | 'title' | 'slug' | 'content' | 'createdAt' | 'updatedAt'>;
 
-export type PostEditorInitialData = Pick<Post, 'id'> & Partial<PostFormData>;
+// 포스트 폼 데이터
+export type PostForm = Pick<Post, 'title' | 'content' | 'published'>;
 
+// 포스트 에디터 초기 데이터
+export type PostEditorData = Pick<Post, 'id'> & Partial<PostForm>;
+
+// 포스트 에디터 Props
 export interface PostEditorProps {
-  initialData?: PostEditorInitialData;
+  initialData?: PostEditorData;
 }
 
-export interface PostListProps {
-  posts: PostListItem[];
-}
-
+// 폼 액션
 export type PostFormAction =
-  | { type: 'SET_FIELD'; field: keyof PostFormData; value: string | boolean }
+  | { type: 'SET_FIELD'; field: keyof PostForm; value: string | boolean }
   | { type: 'RESET_FORM' };
 
-export const initialPostFormState: PostFormData = {
-  title: '',
-  content: '',
-  published: false
-};
+// 폼 상태
 export interface PostFormState {
   success: boolean;
   error: string | null;
   postId?: string;
 }
+
+// 초기 폼 상태
+export const initialPostForm: PostForm = {
+  title: '',
+  content: '',
+  published: false,
+};
