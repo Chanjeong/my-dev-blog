@@ -8,7 +8,7 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  navigationMenuTriggerStyle
+  navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { getActiveFiles } from '@/app/admin/dashboard/files/actions';
 export default function Navigation() {
@@ -49,13 +49,11 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="relative top-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-b border-border z-50">
+    <nav className="relative top-0 left-0 right-0 bg-card backdrop-blur-sm border-b border-border z-50">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Link
-              href="/"
-              className="text-2xl font-bold font-noto-serif-kr hover:text-primary transition-colors">
+            <Link href="/" className="text-2xl font-bold font-noto-serif-kr hover:text-primary transition-colors">
               喜怒哀樂
             </Link>
           </div>
@@ -68,7 +66,8 @@ export default function Navigation() {
                     href={fileUrls.portfolio!}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={navigationMenuTriggerStyle()}>
+                    className={navigationMenuTriggerStyle()}
+                  >
                     Portfolio
                   </a>
                 </NavigationMenuLink>
@@ -80,7 +79,8 @@ export default function Navigation() {
                     href={fileUrls.resume!}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={navigationMenuTriggerStyle()}>
+                    className={navigationMenuTriggerStyle()}
+                  >
                     About
                   </a>
                 </NavigationMenuLink>
@@ -88,9 +88,7 @@ export default function Navigation() {
 
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <Link
-                    href="/contact"
-                    className={navigationMenuTriggerStyle()}>
+                  <Link href="/contact" className={navigationMenuTriggerStyle()}>
                     Contact
                   </Link>
                 </NavigationMenuLink>
@@ -100,8 +98,9 @@ export default function Navigation() {
 
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-md hover:bg-accent transition-colors"
-            aria-label="Toggle theme">
+            className="p-2 rounded-md transition-colors"
+            aria-label="Toggle theme"
+          >
             {theme === 'dark' ? (
               <SunIcon className="h-6 w-6 text-yellow-500" />
             ) : (

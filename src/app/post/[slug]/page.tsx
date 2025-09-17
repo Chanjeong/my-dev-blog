@@ -8,9 +8,9 @@ import 'highlight.js/styles/github.css';
 import { Post } from '@/types/post-editor';
 
 interface PostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 async function getPostBySlug(slug: string): Promise<Post | null> {
@@ -38,7 +38,8 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const decodedSlug = decodeURIComponent(params.slug);
+  const resolvedParams = await params;
+  const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
   const post = await getPostBySlug(decodedSlug);
 

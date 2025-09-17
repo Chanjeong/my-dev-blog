@@ -1,48 +1,52 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-background: #ffffff;
-  --color-foreground: #171717;
-  --color-primary: #00d4aa;
-  --color-primary-foreground: #ffffff;
-  --color-muted: #f5f5f5;
-  --color-muted-foreground: #737373;
-  --color-border: #e5e5e5;
-  --color-input: #e5e5e5;
-  --color-ring: #00d4aa;
+  --color-background: #f8f6f3;
+  --color-foreground: #2d2d2d;
+  --color-primary: #4ade80;
+  --color-primary-foreground: #111827;
+  --color-muted: #f0ede8;
+  --color-muted-foreground: #6b6b6b;
+  --color-border: #d4d1cc;
+  --color-input: #d4d1cc;
+  --color-ring: #4ade80;
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
-  --color-secondary: #f5f5f5;
-  --color-secondary-foreground: #171717;
-  --color-accent: #f5f5f5;
-  --color-accent-foreground: #171717;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #171717;
-  --color-card: #ffffff;
-  --color-card-foreground: #171717;
-  --radius: 0.5rem;
+  --color-secondary: #f0ede8;
+  --color-secondary-foreground: #2d2d2d;
+  --color-accent: #f0ede8;
+  --color-accent-foreground: #2d2d2d;
+  --color-popover: #f8f6f3;
+  --color-popover-foreground: #2d2d2d;
+  --color-card: #fefcf9;
+  --color-card-foreground: #2d2d2d;
+  --color-nav: #fefcf9;
+  --color-nav-foreground: #2d2d2d;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --color-background: #0a0a0a;
-  --color-foreground: #ededed;
-  --color-primary: #00d4aa;
-  --color-primary-foreground: #000000;
-  --color-muted: #262626;
-  --color-muted-foreground: #a3a3a3;
-  --color-border: #404040;
-  --color-input: #404040;
-  --color-ring: #00d4aa;
+  --color-background: #111827;
+  --color-foreground: #ffffff;
+  --color-primary: #4ade80;
+  --color-primary-foreground: #111827;
+  --color-muted: #1f2937;
+  --color-muted-foreground: #9ca3af;
+  --color-border: #374151;
+  --color-input: #374151;
+  --color-ring: #4ade80;
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
-  --color-secondary: #262626;
-  --color-secondary-foreground: #ededed;
-  --color-accent: #262626;
-  --color-accent-foreground: #ededed;
-  --color-popover: #0a0a0a;
-  --color-popover-foreground: #ededed;
-  --color-card: #0a0a0a;
-  --color-card-foreground: #ededed;
+  --color-secondary: #1f2937;
+  --color-secondary-foreground: #ffffff;
+  --color-accent: #1f2937;
+  --color-accent-foreground: #ffffff;
+  --color-popover: #111827;
+  --color-popover-foreground: #ffffff;
+  --color-card: #1f2937;
+  --color-card-foreground: #ffffff;
+  --color-nav: #1f2937;
+  --color-nav-foreground: #ffffff;
 }
 
 :root {
@@ -65,6 +69,8 @@
   --popover-foreground: var(--color-popover-foreground);
   --card: var(--color-card);
   --card-foreground: var(--color-card-foreground);
+  --nav: var(--color-nav);
+  --nav-foreground: var(--color-nav-foreground);
   --radius: var(--radius);
 }
 
@@ -73,9 +79,15 @@ body {
   color: var(--foreground);
 }
 
-.font-noto-serif-kr {
-  font-family: var(--font-noto-serif-kr), 'Noto Serif CJK KR',
-    'Source Han Serif KR', 'Nanum Myeongjo', 'Batang', '바탕', 'Malgun Gothic',
-    '맑은 고딕', serif;
+* {
+  transition:
+    background-color 0.1s ease,
+    border-color 0.1s ease,
+    color 0.1s ease;
 }
 
+.font-noto-serif-kr {
+  font-family:
+    var(--font-noto-serif-kr), 'Noto Serif CJK KR', 'Source Han Serif KR', 'Nanum Myeongjo', 'Batang', '바탕',
+    'Malgun Gothic', '맑은 고딕', serif;
+}
