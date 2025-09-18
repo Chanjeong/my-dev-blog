@@ -1,28 +1,22 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, Settings, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
-import PostList from '@/components/admin/PostList';
+import PostListWrapper from '@/components/admin/wrapper/PostListWrapper';
 
 export const metadata: Metadata = {
   title: '관리자 대시보드 | 개발 블로그',
   description: '블로그와 파일을 관리하는 관리자 대시보드입니다.',
-  robots: 'noindex, nofollow'
+  robots: 'noindex, nofollow',
 };
 
 // 모든 데이터를 한 번에 가져오기 (관리자용 최적화)
 async function getDashboardData() {
   try {
     const allPosts = await prisma.post.findMany({
-      orderBy: { updatedAt: 'desc' }
+      orderBy: { updatedAt: 'desc' },
     });
 
     // 통계 계산
@@ -30,26 +24,29 @@ async function getDashboardData() {
     const publishedCount = allPosts.filter(post => post.published).length;
     const draftCount = allPosts.filter(post => !post.published).length;
 
-    // 최근 5개 게시글 (Date 객체를 문자열로 변환)
+    // 최근 5개 게시글 (Date 객체를 문자열로 변환, content 제외)
     const recentPosts = allPosts.slice(0, 5).map(post => ({
-      ...post,
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      published: post.published,
       createdAt: post.createdAt.toISOString(),
-      updatedAt: post.updatedAt.toISOString()
+      updatedAt: post.updatedAt.toISOString(),
     }));
 
     return {
       stats: {
         totalPosts,
         publishedPosts: publishedCount,
-        draftPosts: draftCount
+        draftPosts: draftCount,
       },
-      recentPosts
+      recentPosts,
     };
   } catch (error) {
     console.error('대시보드 데이터 가져오기 오류:', error);
     return {
       stats: { totalPosts: 0, publishedPosts: 0, draftPosts: 0 },
-      recentPosts: []
+      recentPosts: [],
     };
   }
 }
@@ -75,29 +72,19 @@ export default async function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalPosts}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats.publishedPosts}개 발행됨
-                </p>
+                <p className="text-xs text-muted-foreground">{stats.publishedPosts}개 발행됨</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  발행된 포스트
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">발행된 포스트</CardTitle>
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.publishedPosts}</div>
                 <p className="text-xs text-muted-foreground">
-                  전체의{' '}
-                  {stats.totalPosts > 0
-                    ? Math.round(
-                        (stats.publishedPosts / stats.totalPosts) * 100
-                      )
-                    : 0}
-                  %
+                  전체의 {stats.totalPosts > 0 ? Math.round((stats.publishedPosts / stats.totalPosts) * 100) : 0}%
                 </p>
               </CardContent>
             </Card>
@@ -123,9 +110,7 @@ export default async function AdminDashboard() {
                 <CardTitle className="flex items-center gap-2">
                   <Plus className="h-5 w-5" />새 포스트 작성
                 </CardTitle>
-                <CardDescription>
-                  새로운 블로그 포스트를 작성하세요
-                </CardDescription>
+                <CardDescription>새로운 블로그 포스트를 작성하세요</CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/admin/dashboard/write">
@@ -140,9 +125,7 @@ export default async function AdminDashboard() {
                   <Upload className="h-5 w-5" />
                   파일 관리
                 </CardTitle>
-                <CardDescription>
-                  이력서와 포트폴리오를 관리하세요
-                </CardDescription>
+                <CardDescription>이력서와 포트폴리오를 관리하세요</CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/admin/dashboard/files">
@@ -174,12 +157,10 @@ export default async function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>최근 포스트</CardTitle>
-              <CardDescription>
-                최근에 작성한 포스트들을 확인하세요
-              </CardDescription>
+              <CardDescription>최근에 작성한 포스트들을 확인하세요</CardDescription>
             </CardHeader>
             <CardContent>
-              <PostList posts={recentPosts} />
+              <PostListWrapper posts={recentPosts} />
             </CardContent>
           </Card>
         </div>

@@ -4,17 +4,14 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Edit,
-  Trash2,
-  Calendar,
-  CheckCircle,
-  Clock,
-  FileText
-} from 'lucide-react';
+import { Edit, Trash2, Calendar, CheckCircle, Clock, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { deletePostAction } from '@/app/admin/dashboard/write/actions';
-import { PostListProps } from '@/types/post-editor';
+import { Post } from '@/types/post-editor';
+
+export type PostListProps = {
+  posts: (Omit<Post, 'content' | 'createdAt' | 'updatedAt'> & { createdAt: string; updatedAt: string })[];
+};
 
 export default function PostList({ posts }: PostListProps) {
   const [localPosts, setLocalPosts] = useState(posts);
@@ -32,7 +29,7 @@ export default function PostList({ posts }: PostListProps) {
       } else {
         alert('삭제 중 오류가 발생했습니다: ' + result.error);
       }
-    } catch (error) {
+    } catch {
       alert('삭제 중 오류가 발생했습니다.');
     } finally {
       setDeletingId(null);
@@ -46,7 +43,7 @@ export default function PostList({ posts }: PostListProps) {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -73,13 +70,9 @@ export default function PostList({ posts }: PostListProps) {
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <CardTitle className="text-lg truncate">
-                      {post.title}
-                    </CardTitle>
+                    <CardTitle className="text-lg truncate">{post.title}</CardTitle>
                     {post.published ? (
-                      <Badge
-                        variant="default"
-                        className="bg-green-100 text-green-800">
+                      <Badge variant="default" className="bg-green-100 text-green-800">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         발행됨
                       </Badge>
@@ -112,7 +105,8 @@ export default function PostList({ posts }: PostListProps) {
                     size="sm"
                     onClick={() => handleDelete(post.id)}
                     disabled={deletingId === post.id}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
                     <Trash2 className="h-4 w-4 mr-1" />
                     {deletingId === post.id ? '삭제 중...' : '삭제'}
                   </Button>

@@ -1,12 +1,12 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import PostEditor from '@/components/admin/PostEditor';
+import PostEditorWrapper from '@/components/admin/wrapper/PostEditorWrapper';
 
 export const metadata: Metadata = {
   title: '포스트 수정 | 개발 블로그',
   description: '포스트를 수정하는 페이지입니다.',
-  robots: 'noindex, nofollow'
+  robots: 'noindex, nofollow',
 };
 
 interface EditPageProps {
@@ -24,20 +24,20 @@ export default async function EditPage({ params }: EditPageProps) {
         id: true,
         title: true,
         content: true,
-        published: true
-      }
+        published: true,
+      },
     });
     if (!post) {
       notFound();
     }
 
     return (
-      <PostEditor
+      <PostEditorWrapper
         initialData={{
           id: post.id,
           title: post.title,
           content: post.content,
-          published: post.published
+          published: post.published,
         }}
       />
     );

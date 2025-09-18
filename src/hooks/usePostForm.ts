@@ -1,5 +1,7 @@
 import { useReducer } from 'react';
-import { PostFormData, PostFormAction, initialPostFormState } from '@/types/post-editor';
+import { Post, PostFormAction, initialPostForm } from '@/types/post-editor';
+
+type PostFormData = Pick<Post, 'title' | 'content' | 'published'>;
 
 function postFormReducer(state: PostFormData, action: PostFormAction): PostFormData {
   switch (action.type) {
@@ -7,7 +9,7 @@ function postFormReducer(state: PostFormData, action: PostFormAction): PostFormD
       return { ...state, [action.field]: action.value };
 
     case 'RESET_FORM':
-      return initialPostFormState;
+      return initialPostForm;
 
     default:
       return state;
@@ -16,7 +18,7 @@ function postFormReducer(state: PostFormData, action: PostFormAction): PostFormD
 
 export function usePostForm(initialData?: Partial<PostFormData>) {
   const [formData, dispatch] = useReducer(postFormReducer, {
-    ...initialPostFormState,
+    ...initialPostForm,
     ...initialData,
   });
 

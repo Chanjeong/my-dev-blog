@@ -2,8 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { CalendarIcon } from '@heroicons/react/24/outline';
+import { Post } from '@/types/post-editor';
 
-async function getPublishedPosts() {
+async function getPublishedPosts(): Promise<
+  Pick<Post, 'id' | 'title' | 'slug' | 'content' | 'createdAt' | 'updatedAt'>[]
+> {
   try {
     const posts = await prisma.post.findMany({
       where: { published: true },
