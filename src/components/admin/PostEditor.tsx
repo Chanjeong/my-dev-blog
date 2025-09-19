@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,16 +10,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Save } from 'lucide-react';
 import { savePostAction } from '@/app/admin/dashboard/write/actions';
 import { usePostForm } from '@/hooks/usePostForm';
-import { Post, PostFormState } from '@/types/post-editor';
+import { PostFormState } from '@/types/post-editor';
+import { Post } from '@/types/post-editor';
+
+export type PostEditorProps = {
+  initialData?: Pick<Post, 'id'> & Partial<Pick<Post, 'title' | 'content' | 'published'>>;
+};
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import MDEditor from '@uiw/react-md-editor';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-
-export type PostEditorProps = {
-  initialData?: Pick<Post, 'id'> & Partial<Pick<Post, 'title' | 'content' | 'published'>>;
-};
+import { useRef } from 'react';
 
 export default function PostEditor({ initialData }: PostEditorProps) {
   const router = useRouter();
@@ -60,208 +62,243 @@ export default function PostEditor({ initialData }: PostEditorProps) {
         textarea.setSelectionRange(newCursorPos, newCursorPos);
         textarea.focus();
       }, 0);
+    } else {
+      // 폴백: 맨 끝에 추가
+      dispatch({
+        type: 'SET_FIELD',
+        field: 'content',
+        value: formData.content + text,
+      });
     }
+  };
+
+  // 이미지 압축 함수
+  const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File> => {
+    return new Promise(resolve => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(
+          blob => resolve(blob ? new File([blob], file.name, { type: 'image/jpeg' }) : file),
+          'image/jpeg',
+          quality
+        );
+      };
+
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   // 이미지 업로드 함수
   const uploadImage = async (file: File): Promise<string> => {
-    try {
-      // 파일 크기 제한 (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('파일 크기는 5MB를 초과할 수 없습니다.');
-      }
-
-      // 파일 타입 검증
-      if (!file.type.startsWith('image/')) {
-        throw new Error('이미지 파일만 업로드할 수 있습니다.');
-      }
-
-      // 고유한 파일명 생성
-      const timestamp = Date.now();
-      const randomString = Math.random().toString(36).substring(2, 15);
-      const fileExtension = file.name.split('.').pop();
-      const fileName = `blog-${timestamp}-${randomString}.${fileExtension}`;
-      const filePath = `posts/${fileName}`;
-
-      // Supabase Storage에 업로드
-      const { error } = await supabase.storage.from('blog-images').upload(filePath, file, {
-        cacheControl: '3600',
-      });
-
-      if (error) {
-        throw new Error(`업로드 실패: ${error.message}`);
-      }
-
-      // 공개 URL 생성
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('blog-images').getPublicUrl(filePath);
-
-      return publicUrl;
-    } catch (error) {
-      console.error('이미지 업로드 오류:', error);
-      throw error;
+    if (!file.type.startsWith('image/')) {
+      throw new Error('이미지 파일만 업로드할 수 있습니다.');
     }
+
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error('파일 크기는 10MB를 초과할 수 없습니다.');
+    }
+
+    // 5MB 이상이면 압축
+    const fileToUpload = file.size > 5 * 1024 * 1024 ? await compressImage(file) : file;
+
+    const fileExt = fileToUpload.name.split('.').pop() || 'jpg';
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `blog-images/${fileName}`;
+
+    const { error } = await supabase.storage
+      .from('blog-images')
+      .upload(filePath, fileToUpload, { cacheControl: '3600' });
+
+    if (error) {
+      if (error.message.includes('Bucket not found')) {
+        throw new Error('이미지 저장소가 설정되지 않았습니다.');
+      } else if (error.message.includes('Row Level Security')) {
+        throw new Error('이미지 업로드 권한이 없습니다.');
+      }
+      throw new Error(`업로드 실패: ${error.message}`);
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('blog-images').getPublicUrl(filePath);
+
+    return publicUrl;
   };
 
-  // MDEditor 커스텀 툴바
-  const customCommands = [
-    {
-      name: 'upload-image',
-      keyCommand: 'upload-image',
-      buttonProps: { 'aria-label': '이미지 업로드', title: '이미지 업로드' },
-      icon: (
-        <svg width="12" height="12" viewBox="0 0 24 24">
-          <path
-            fill="currentColor"
-            d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
-          />
-        </svg>
-      ),
-      execute: async () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = async e => {
-          const file = (e.target as HTMLInputElement).files?.[0];
-          if (file) {
-            try {
-              const imageUrl = await uploadImage(file);
-              const imageMarkdown = `![${file.name}](${imageUrl})`;
-              insertTextAtCursor(imageMarkdown);
-            } catch {
-              toast.error('이미지 업로드에 실패했습니다.');
-            }
-          }
-        };
-        input.click();
-      },
-    },
-  ];
-
-  // 액션 상태가 변경될 때 처리
-  useEffect(() => {
-    if (state.success) {
-      toast.success('포스트가 성공적으로 저장되었습니다!');
-      router.push('/admin/dashboard');
-    } else if (state.error) {
-      toast.error(state.error);
-    }
-  }, [state, router]);
-
-  // 마운트 상태 설정
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return null;
-  }
+  useEffect(() => {
+    if (state.success) {
+      alert(formData.published ? '포스트가 발행되었습니다!' : '포스트가 임시저장되었습니다!');
+
+      router.push('/admin/dashboard');
+    }
+  }, [state.success, formData.published, router]);
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              {initialData?.id ? '포스트 수정' : '새 포스트 작성'}
-            </h1>
-            <p className="text-muted-foreground">
-              {initialData?.id ? '포스트를 수정하고 저장하세요.' : '새로운 포스트를 작성하고 저장하세요.'}
-            </p>
+      <main className="pt-24 px-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">{initialData?.id ? '포스트 수정' : '새 포스트 작성'}</h1>
+            </div>
           </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <form action={formAction} className="space-y-6">
-                {/* 숨겨진 필드들 */}
-                {initialData?.id && <input type="hidden" name="id" value={initialData.id} />}
+          <form action={formAction} className="space-y-6">
+            {/* 숨겨진 필드들 */}
+            <input type="hidden" name="postId" value={initialData?.id || ''} />
+            <input type="hidden" name="published" value={formData.published.toString()} />
 
-                {/* 제목 입력 */}
+            {/* 제목 */}
+            <Card>
+              <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title">제목</Label>
+                  <Label htmlFor="title">제목 *</Label>
                   <Input
                     id="title"
                     name="title"
                     value={formData.title}
-                    onChange={e => dispatch({ type: 'SET_FIELD', field: 'title', value: e.target.value })}
+                    onChange={e =>
+                      dispatch({
+                        type: 'SET_FIELD',
+                        field: 'title',
+                        value: e.target.value,
+                      })
+                    }
                     placeholder="포스트 제목을 입력하세요"
-                    className="text-lg"
+                    className="text-2xl font-bold border-none shadow-none focus-visible:ring-0"
                     required
+                    disabled={isPending}
                   />
                 </div>
+              </CardContent>
+            </Card>
 
-                {/* 내용 입력 */}
+            <Card>
+              <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="content">내용</Label>
-                  <div className="border rounded-md overflow-hidden">
+                  <Label>내용 *</Label>
+                  <div className="min-h-[600px]">
                     <MDEditor
                       ref={editorRef}
                       value={formData.content}
-                      onChange={value => dispatch({ type: 'SET_FIELD', field: 'content', value: value || '' })}
-                      data-color-mode={theme === 'dark' ? 'dark' : 'light'}
-                      height={500}
-                      visibleDragbar={false}
-                      textareaProps={{
-                        placeholder: '포스트 내용을 작성하세요...',
-                        style: {
-                          fontSize: '14px',
-                          lineHeight: '1.6',
-                        },
+                      onChange={value => {
+                        dispatch({
+                          type: 'SET_FIELD',
+                          field: 'content',
+                          value: value || '',
+                        });
                       }}
-                      commands={customCommands}
+                      data-color-mode={mounted && theme === 'dark' ? 'dark' : 'light'}
+                      height={600}
+                      visibleDragbar={false}
+                      onPaste={async event => {
+                        const items = event.clipboardData?.items;
+                        if (!items) return;
+
+                        for (const item of items) {
+                          if (item.type.startsWith('image/')) {
+                            event.preventDefault();
+                            const file = item.getAsFile();
+                            if (!file) continue;
+
+                            const loadingToast = toast.loading('이미지를 업로드하는 중...', { duration: 0 });
+
+                            try {
+                              const imageUrl = await uploadImage(file);
+                              insertTextAtCursor(`![이미지](${imageUrl})\n\n`);
+                              toast.dismiss(loadingToast);
+                              toast.success('이미지가 업로드되었습니다!');
+                            } catch (error) {
+                              toast.dismiss(loadingToast);
+                              toast.error(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.');
+                            }
+                            break;
+                          }
+                        }
+                      }}
                     />
                   </div>
+                  <input type="hidden" name="content" value={formData.content} />
                 </div>
+              </CardContent>
+            </Card>
 
-                {/* 발행 상태 */}
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="published"
-                    name="published"
-                    checked={formData.published}
-                    onChange={e => dispatch({ type: 'SET_FIELD', field: 'published', value: e.target.checked })}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="published">즉시 발행</Label>
-                </div>
+            {/* 액션 버튼들 */}
+            <div className="flex gap-4 justify-end">
+              {/* 임시저장 버튼 */}
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={isPending || !formData.title.trim() || !formData.content?.trim()}
+                onClick={e => {
+                  e.preventDefault();
+                  dispatch({
+                    type: 'SET_FIELD',
+                    field: 'published',
+                    value: false,
+                  });
+                  setTimeout(() => {
+                    const form = document.querySelector('form');
+                    if (form) {
+                      const hiddenInput = form.querySelector('input[name="published"]') as HTMLInputElement;
+                      if (hiddenInput) hiddenInput.value = 'false';
+                      form.requestSubmit();
+                    }
+                  }, 100);
+                }}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {isPending ? '저장 중...' : '임시저장'}
+              </Button>
 
-                {/* 액션 상태 표시 */}
-                {state.error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{state.error}</AlertDescription>
-                  </Alert>
-                )}
+              {/* 발행하기 버튼 */}
+              <Button
+                type="submit"
+                disabled={isPending || !formData.title.trim() || !formData.content?.trim()}
+                onClick={e => {
+                  e.preventDefault();
+                  dispatch({
+                    type: 'SET_FIELD',
+                    field: 'published',
+                    value: true,
+                  });
+                  setTimeout(() => {
+                    const form = document.querySelector('form');
+                    if (form) {
+                      const hiddenInput = form.querySelector('input[name="published"]') as HTMLInputElement;
+                      if (hiddenInput) hiddenInput.value = 'true';
+                      form.requestSubmit();
+                    }
+                  }, 100);
+                }}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {isPending ? '발행 중...' : '발행하기'}
+              </Button>
+            </div>
 
-                {/* 버튼들 */}
-                <div className="flex justify-between">
-                  <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending}>
-                    취소
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isPending || !formData.title.trim() || !formData.content.trim()}
-                    className="min-w-[120px]"
-                  >
-                    {isPending ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>저장 중...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-2">
-                        <Save className="w-4 h-4" />
-                        <span>저장</span>
-                      </div>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+            {/* 에러 메시지 */}
+            {state.error && (
+              <Alert variant="destructive">
+                <AlertDescription>{state.error}</AlertDescription>
+              </Alert>
+            )}
+          </form>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

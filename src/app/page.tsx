@@ -2,7 +2,7 @@ import CardContainer from '@/components/CardContainers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CalendarIcon, DocumentTextIcon, BriefcaseIcon, HeartIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, DocumentTextIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 import { BookOpenIcon, MapPinIcon } from 'lucide-react';
 
@@ -71,23 +71,7 @@ export default function Home() {
                   className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer group"
                 >
                   <DocumentTextIcon className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-                  <span>이전 블로그들</span>
-                </a>
-                <a
-                  href="https://www.notion.so/1500b10db41e80dca69ad833b8f9b090?source=copy_link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer group"
-                >
-                  <BriefcaseIcon className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-                  <span>실무 경험</span>
-                </a>
-                <a
-                  href="/hobbies"
-                  className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer group"
-                >
-                  <HeartIcon className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-                  <span>취미</span>
+                  <span>이전 블로그</span>
                 </a>
               </div>
             </div>

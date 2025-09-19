@@ -1,16 +1,75 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github.css';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { Post } from '@/types/post-editor';
 
 interface PostPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+// 정적 페이지 생성을 위한 함수
+export async function generateStaticParams() {
+  try {
+    const posts = await prisma.post.findMany({
+      where: { published: true },
+      select: { slug: true },
+    });
+
+    return posts.map(post => ({
+      slug: post.slug,
+    }));
+  } catch (error) {
+    console.error('generateStaticParams 오류:', error);
+    return [];
+  }
+}
+
+// 동적 메타데이터 생성
+export async function generateMetadata({ params }: PostPageProps) {
+  const resolvedParams = await params;
+  const decodedSlug = decodeURIComponent(resolvedParams.slug);
+
+  try {
+    const post = await prisma.post.findUnique({
+      where: {
+        slug: decodedSlug,
+        published: true,
+      },
+      select: {
+        title: true,
+        content: true,
+        createdAt: true,
+      },
+    });
+
+    if (!post) {
+      notFound();
+    }
+
+    const firstParagraph =
+      post.content
+        .split('\n')
+        .find(line => line.trim().length > 0 && !line.startsWith('#'))
+        ?.replace(/[#*`]/g, '')
+        ?.trim() || '';
+
+    return {
+      title: `${post.title} | 개발 블로그`,
+      description: firstParagraph || '개발 블로그 포스트입니다.',
+      openGraph: {
+        title: post.title,
+        description: firstParagraph || '개발 블로그 포스트입니다.',
+        type: 'article',
+        publishedTime: post.createdAt.toISOString(),
+      },
+    };
+  } catch (error) {
+    console.error('메타데이터 생성 오류:', error);
+    notFound();
+  }
 }
 
 async function getPostBySlug(slug: string): Promise<Post | null> {
@@ -72,37 +131,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
             <CardContent>
               {/* 마크다운 콘텐츠 */}
-              <div className="prose prose-gray dark:prose-invert max-w-none">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeHighlight]}
-                  components={{
-                    img: ({ src, alt, ...props }) => (
-                      <img
-                        src={src}
-                        alt={alt}
-                        className="w-full max-w-full h-auto my-4"
-                        style={{ maxHeight: '500px', objectFit: 'contain' }}
-                        {...props}
-                      />
-                    ),
-                    // 코드 블록 스타일링
-                    pre: ({ children, ...props }) => (
-                      <pre className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 overflow-x-auto" {...props}>
-                        {children}
-                      </pre>
-                    ),
-                    // 인라인 코드 스타일링
-                    code: ({ children, ...props }) => (
-                      <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm" {...props}>
-                        {children}
-                      </code>
-                    ),
-                  }}
-                >
-                  {post.content}
-                </ReactMarkdown>
-              </div>
+              <MarkdownRenderer content={post.content} />
             </CardContent>
           </Card>
         </div>
