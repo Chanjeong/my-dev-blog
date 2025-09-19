@@ -129,7 +129,7 @@ export default function PostEditor({ initialData }: PostEditorProps) {
               const imageUrl = await uploadImage(file);
               const imageMarkdown = `![${file.name}](${imageUrl})`;
               insertTextAtCursor(imageMarkdown);
-            } catch (error) {
+            } catch {
               toast.error('이미지 업로드에 실패했습니다.');
             }
           }

@@ -12,3 +12,4 @@ const PostEditor = dynamic(() => import('@/components/admin/PostEditor'), {
 export default function PostEditorWrapper(props: PostEditorProps) {
   return <PostEditor {...props} />;
 }
+

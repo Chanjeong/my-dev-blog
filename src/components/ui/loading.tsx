@@ -38,3 +38,4 @@ export function LoadingCard({ text = '로딩 중...' }: { text?: string }) {
     </div>
   );
 }
+

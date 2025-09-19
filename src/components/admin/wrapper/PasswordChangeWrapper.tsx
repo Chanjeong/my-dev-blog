@@ -11,3 +11,4 @@ const PasswordChangeForm = dynamic(() => import('@/components/admin/PasswordChan
 export default function PasswordChangeWrapper() {
   return <PasswordChangeForm />;
 }
+

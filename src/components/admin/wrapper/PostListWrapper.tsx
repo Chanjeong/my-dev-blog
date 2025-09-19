@@ -12,3 +12,4 @@ const PostList = dynamic(() => import('@/components/admin/PostList'), {
 export default function PostListWrapper(props: PostListProps) {
   return <PostList {...props} />;
 }
+

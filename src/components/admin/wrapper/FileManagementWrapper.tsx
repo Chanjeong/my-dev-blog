@@ -11,3 +11,4 @@ const FileManagementClient = dynamic(() => import('@/components/admin/FileManage
 export default function FileManagementWrapper() {
   return <FileManagementClient />;
 }
+
