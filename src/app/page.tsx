@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { CalendarIcon, DocumentTextIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 import { BookOpenIcon, MapPinIcon } from 'lucide-react';
+import Link from 'next/link';
 
 const hobbies = [
   {
@@ -83,12 +84,15 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-bold text-foreground">최신 글</h2>
-              <Button variant="ghost" className="text-primary hover:text-primary/80">
-                <p className="font-extrabold">모든글 보기</p>
-                <ArrowRightIcon className="ml-2 h-4 w-4" />
-              </Button>
+              <Link href="/posts">
+                <Button variant="ghost" className="text-primary hover:text-primary/80">
+                  <p className="font-extrabold">모든글 보기</p>
+                  <ArrowRightIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
-            <CardContainer />
+
+            <CardContainer limit={3} />
           </div>
         </section>
 

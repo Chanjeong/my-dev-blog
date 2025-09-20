@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { CalendarIcon } from '@heroicons/react/24/outline';
 import { Post } from '@/types/post-editor';
 
-async function getPublishedPosts(): Promise<
-  Pick<Post, 'id' | 'title' | 'slug' | 'content' | 'createdAt' | 'updatedAt'>[]
-> {
+async function getPublishedPosts(
+  limit?: number
+): Promise<Pick<Post, 'id' | 'title' | 'slug' | 'content' | 'createdAt' | 'updatedAt'>[]> {
   try {
     const posts = await prisma.post.findMany({
       where: { published: true },
@@ -19,6 +19,7 @@ async function getPublishedPosts(): Promise<
         updatedAt: true,
       },
       orderBy: { createdAt: 'desc' },
+      ...(limit && { take: limit }),
     });
     return posts;
   } catch (error) {
@@ -27,8 +28,8 @@ async function getPublishedPosts(): Promise<
   }
 }
 
-export default async function CardContainer() {
-  const posts = await getPublishedPosts();
+export default async function CardContainer({ limit }: { limit?: number } = {}) {
+  const posts = await getPublishedPosts(limit);
 
   if (posts.length === 0) {
     return (

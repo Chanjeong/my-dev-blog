@@ -13,7 +13,6 @@ export default function HtmlRenderer({ content }: HtmlRendererProps) {
 
   useEffect(() => {
     if (contentRef.current) {
-      // 링크를 새 탭에서 열기
       const links = contentRef.current.querySelectorAll('a');
       links.forEach(link => {
         link.setAttribute('target', '_blank');
