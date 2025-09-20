@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import MarkdownRenderer from '@/components/MarkdownRenderer';
+import HtmlRenderer from '@/components/HtmlRenderer';
 import { Post } from '@/types/post-editor';
 
 interface PostPageProps {
@@ -130,8 +130,8 @@ export default async function PostPage({ params }: PostPageProps) {
             </CardHeader>
 
             <CardContent>
-              {/* 마크다운 콘텐츠 */}
-              <MarkdownRenderer content={post.content} />
+              {/* HTML 콘텐츠 */}
+              <HtmlRenderer content={post.content} />
             </CardContent>
           </Card>
         </div>
