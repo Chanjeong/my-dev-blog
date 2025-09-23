@@ -12,30 +12,30 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow',
 };
 
-// 최적화된 데이터 조회 (필요한 데이터만 가져오기)
+// 최적화된 데이터 조회 (병렬 쿼리로 성능 향상)
 async function getDashboardData() {
   try {
-    // 통계용 쿼리 - content 필드 제외
-    const allPosts = await prisma.post.findMany({
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        published: true,
-        createdAt: true,
-        updatedAt: true,
-        // content 제거 - 통계에는 필요 없음 (성능 최적화)
-      },
-      orderBy: { updatedAt: 'desc' },
-    });
+    // 병렬로 통계와 최근 포스트를 동시에 조회 (성능 최적화)
+    const [totalCount, publishedCount, draftCount, recentPosts] = await Promise.all([
+      prisma.post.count(),
+      prisma.post.count({ where: { published: true } }),
+      prisma.post.count({ where: { published: false } }),
+      prisma.post.findMany({
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          published: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 5, // 데이터베이스 레벨에서 제한
+      }),
+    ]);
 
-    // 통계 계산
-    const totalPosts = allPosts.length;
-    const publishedCount = allPosts.filter(post => post.published).length;
-    const draftCount = allPosts.filter(post => !post.published).length;
-
-    // 최근 5개 게시글 (이미 필요한 필드만 선택됨)
-    const recentPosts = allPosts.slice(0, 5).map(post => ({
+    // 최근 포스트 데이터 변환
+    const formattedRecentPosts = recentPosts.map(post => ({
       id: post.id,
       title: post.title,
       slug: post.slug,
@@ -46,11 +46,11 @@ async function getDashboardData() {
 
     return {
       stats: {
-        totalPosts,
+        totalPosts: totalCount,
         publishedPosts: publishedCount,
         draftPosts: draftCount,
       },
-      recentPosts,
+      recentPosts: formattedRecentPosts,
     };
   } catch (error) {
     console.error('대시보드 데이터 가져오기 오류:', error);

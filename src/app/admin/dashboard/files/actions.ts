@@ -34,35 +34,49 @@ export async function uploadFile(formData: FormData) {
       return { success: false, error: 'PDF 파일만 업로드 가능합니다.' };
     }
 
-    // 기존 파일 삭제 (같은 타입의 파일이 있다면)
+    // 기존 파일 조회 (트랜잭션 외부)
     const existingFile = await prisma.fileUpload.findFirst({
       where: { fileType: fileType },
       orderBy: { createdAt: 'desc' },
     });
 
-    if (existingFile) {
-      // Supabase Storage에서 기존 파일 삭제
-      const existingFilePath = `uploads/${existingFile.fileType}/${existingFile.filename}`;
-      const { error: deleteError } = await supabase.storage.from('files').remove([existingFilePath]);
-
-      if (deleteError) {
-        console.error('기존 파일 삭제 오류:', deleteError);
-        // 삭제 실패해도 계속 진행
+    // 트랜잭션으로 데이터베이스 작업 통합 (성능 최적화)
+    const result = await prisma.$transaction(async tx => {
+      // 1. 기존 파일 삭제 (데이터베이스)
+      if (existingFile) {
+        await tx.fileUpload.delete({
+          where: { id: existingFile.id },
+        });
       }
 
-      // 데이터베이스에서 기존 파일 정보 삭제
-      await prisma.fileUpload.delete({
-        where: { id: existingFile.id },
+      // 2. 고유한 파일명 생성
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(2, 15);
+      const uniqueFilename = `${timestamp}-${random}${fileExtension}`;
+
+      // 3. 새 파일 정보 저장
+      return await tx.fileUpload.create({
+        data: {
+          filename: uniqueFilename,
+          originalName: file.name,
+          fileType: fileType,
+          fileSize: file.size,
+          fileUrl: '', // 임시로 빈 값, 업로드 후 업데이트
+          uploadedBy: uploadedBy,
+        },
       });
+    });
+
+    // Supabase Storage 작업 (트랜잭션 외부)
+    const filePath = `uploads/${fileType}/${result.filename}`;
+
+    // 기존 파일 삭제 (Supabase)
+    if (existingFile) {
+      const existingFilePath = `uploads/${existingFile.fileType}/${existingFile.filename}`;
+      await supabase.storage.from('files').remove([existingFilePath]);
     }
 
-    // 고유한 파일명 생성 (타임스탬프 + 랜덤)
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 15);
-    const uniqueFilename = `${timestamp}-${random}${fileExtension}`;
-    const filePath = `uploads/${fileType}/${uniqueFilename}`;
-
-    // Supabase Storage에 파일 업로드
+    // 새 파일 업로드 (Supabase)
     const { error: uploadError } = await supabase.storage.from('files').upload(filePath, file, {
       cacheControl: '3600',
       upsert: false,
@@ -73,19 +87,12 @@ export async function uploadFile(formData: FormData) {
       return { success: false, error: '파일 업로드 중 오류가 발생했습니다.' };
     }
 
-    // 공개 URL 생성
+    // 공개 URL 생성 및 데이터베이스 업데이트
     const { data: urlData } = supabase.storage.from('files').getPublicUrl(filePath);
 
-    // 데이터베이스에 파일 정보 저장
-    const fileUpload = await prisma.fileUpload.create({
-      data: {
-        filename: uniqueFilename,
-        originalName: file.name,
-        fileType: fileType,
-        fileSize: file.size,
-        fileUrl: urlData.publicUrl,
-        uploadedBy: uploadedBy,
-      },
+    const fileUpload = await prisma.fileUpload.update({
+      where: { id: result.id },
+      data: { fileUrl: urlData.publicUrl },
     });
 
     return {

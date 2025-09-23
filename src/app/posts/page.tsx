@@ -7,6 +7,14 @@ export default async function PostsPage() {
     where: {
       published: true,
     },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      createdAt: true,
+      updatedAt: true,
+      // content 제거 - 목록에서는 필요 없음 (성능 최적화)
+    },
     orderBy: {
       createdAt: 'desc',
     },

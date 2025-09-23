@@ -56,59 +56,56 @@ export async function savePostAction(prevState: PostFormState, formData: FormDat
     // 슬러그 생성 (제목 기반)
     const baseSlug = createSlug(title);
 
-    // 고유한 슬러그 생성
+    // 고유한 슬러그 생성 (최적화된 방식)
+    // 1. 한 번에 모든 관련 슬러그를 가져옴 (성능 최적화)
+    const existingSlugs = await prisma.post.findMany({
+      where: {
+        slug: { startsWith: baseSlug },
+        ...(postId && { id: { not: postId } }), // 수정 시에는 현재 포스트 제외
+      },
+      select: { slug: true },
+    });
+
+    // 2. 메모리에서 중복 체크 (초고속)
     let slug = baseSlug;
     let counter = 1;
-
-    while (true) {
-      const existingPost = await prisma.post.findUnique({
-        where: { slug },
-        select: { id: true },
-      });
-
-      if (!existingPost || existingPost.id === postId) {
-        break;
-      }
-
+    while (existingSlugs.some(p => p.slug === slug)) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
 
-    if (postId) {
-      // 포스트 수정
-      await prisma.post.update({
-        where: { id: postId },
-        data: {
-          title: title.trim(),
-          content: content.trim(),
-          slug,
-          published,
-          updatedAt: new Date(),
-        },
-      });
+    // 트랜잭션으로 포스트 저장 (데이터 일관성 보장)
+    const result = await prisma.$transaction(async tx => {
+      if (postId) {
+        // 포스트 수정
+        return await tx.post.update({
+          where: { id: postId },
+          data: {
+            title: title.trim(),
+            content: content.trim(),
+            slug,
+            published,
+            updatedAt: new Date(),
+          },
+        });
+      } else {
+        // 새 포스트 생성
+        return await tx.post.create({
+          data: {
+            title: title.trim(),
+            content: content.trim(),
+            slug,
+            published,
+          },
+        });
+      }
+    });
 
-      // 게시글 수정 후 정적 페이지 재생성
-      revalidatePath('/');
-      revalidatePath('/posts');
+    // 트랜잭션 성공 후 캐시 무효화
+    revalidatePath('/');
+    revalidatePath('/posts');
 
-      return { success: true, error: null, postId };
-    } else {
-      // 새 포스트 생성
-      const newPost = await prisma.post.create({
-        data: {
-          title: title.trim(),
-          content: content.trim(),
-          slug,
-          published,
-        },
-      });
-
-      // 새 게시글 생성 후 정적 페이지 재생성
-      revalidatePath('/');
-      revalidatePath('/posts');
-
-      return { success: true, error: null, postId: newPost.id };
-    }
+    return { success: true, error: null, postId: result.id };
   } catch (error) {
     console.error('포스트 저장 오류:', error);
     return { success: false, error: '포스트 저장 중 오류가 발생했습니다.' };
