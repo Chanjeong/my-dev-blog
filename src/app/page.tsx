@@ -1,8 +1,7 @@
 import CardContainer from '@/components/CardContainers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CalendarIcon, DocumentTextIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 import { BookOpenIcon, MapPinIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -102,7 +101,7 @@ export default function Home() {
               {/* 헤더 */}
               <div className="text-center space-y-4">
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto italic">
-                  개발 외에도 다양한 것들에 관심이 많아요. 이런 것들이 저를 더 풍성한 사람으로 만들어준다고 생각합니다.
+                  개발 외에도 다양한 것들에 관심이 많아요. 공감하시면 연락한번 주세요:)
                 </p>
               </div>
 
@@ -127,34 +126,6 @@ export default function Home() {
             </div>
           </main>
         </div>
-
-        {/* Subscription Section */}
-        <section className="py-16 px-6">
-          <div className="max-w-6xl mx-auto">
-            <Card className="bg-gradient-to-r from-card to-muted border-border">
-              <CardContent className="py-16 px-8">
-                <div className="text-center space-y-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-green-500 rounded-full mx-auto flex items-center justify-center">
-                    <CalendarIcon className="h-8 w-8 text-primary-foreground" />
-                  </div>
-
-                  <h3 className="text-3xl font-bold text-foreground">새로운 글 알림 받기</h3>
-
-                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    새로운 기술 포스트가 올라올 때마다 이메일로 알림을 받아보세요
-                  </p>
-
-                  <div className="flex max-w-md mx-auto gap-4">
-                    <Input placeholder="이메일 주소를 입력하세요" className="flex-1 bg-background border-border" />
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-8">구독하기</Button>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground">언제든지 구독 해지할 수 있습니다</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
       </main>
     </div>
   );

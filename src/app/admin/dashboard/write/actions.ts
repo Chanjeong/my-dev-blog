@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { JWTPayload } from '@/types/jwt';
-import { revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 // slugify import 제거 - 한글 친화적 slug 생성 함수 사용
 import { PostFormState } from '@/types/post-editor';
 
@@ -88,7 +88,8 @@ export async function savePostAction(prevState: PostFormState, formData: FormDat
       });
 
       // 게시글 수정 후 정적 페이지 재생성
-      revalidateTag('posts');
+      revalidatePath('/');
+      revalidatePath('/posts');
 
       return { success: true, error: null, postId };
     } else {
@@ -103,7 +104,8 @@ export async function savePostAction(prevState: PostFormState, formData: FormDat
       });
 
       // 새 게시글 생성 후 정적 페이지 재생성
-      revalidateTag('posts');
+      revalidatePath('/');
+      revalidatePath('/posts');
 
       return { success: true, error: null, postId: newPost.id };
     }
@@ -126,7 +128,8 @@ export async function deletePostAction(postId: string): Promise<PostFormState> {
     });
 
     // 게시글 삭제 후 정적 페이지 재생성
-    revalidateTag('posts');
+    revalidatePath('/');
+    revalidatePath('/posts');
 
     return { success: true, error: null };
   } catch (error) {
