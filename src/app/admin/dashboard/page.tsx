@@ -12,10 +12,20 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow',
 };
 
-// 모든 데이터를 한 번에 가져오기 (관리자용 최적화)
+// 최적화된 데이터 조회 (필요한 데이터만 가져오기)
 async function getDashboardData() {
   try {
+    // 통계용 쿼리 - content 필드 제외
     const allPosts = await prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
+        // content 제거 - 통계에는 필요 없음 (성능 최적화)
+      },
       orderBy: { updatedAt: 'desc' },
     });
 
@@ -24,7 +34,7 @@ async function getDashboardData() {
     const publishedCount = allPosts.filter(post => post.published).length;
     const draftCount = allPosts.filter(post => !post.published).length;
 
-    // 최근 5개 게시글 (Date 객체를 문자열로 변환, content 제외)
+    // 최근 5개 게시글 (이미 필요한 필드만 선택됨)
     const recentPosts = allPosts.slice(0, 5).map(post => ({
       id: post.id,
       title: post.title,

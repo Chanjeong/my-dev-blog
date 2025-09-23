@@ -4,9 +4,7 @@ import Link from 'next/link';
 import { CalendarIcon } from '@heroicons/react/24/outline';
 import { Post } from '@/types/post-editor';
 
-async function getPublishedPosts(): Promise<
-  Pick<Post, 'id' | 'title' | 'slug' | 'content' | 'createdAt' | 'updatedAt'>[]
-> {
+async function getPublishedPosts(): Promise<Pick<Post, 'id' | 'title' | 'slug' | 'createdAt' | 'updatedAt'>[]> {
   try {
     const posts = await prisma.post.findMany({
       where: { published: true },
@@ -14,7 +12,7 @@ async function getPublishedPosts(): Promise<
         id: true,
         title: true,
         slug: true,
-        content: true,
+        // content 제거 - 홈페이지에서는 필요 없음 (성능 최적화)
         createdAt: true,
         updatedAt: true,
       },
