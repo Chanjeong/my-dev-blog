@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { CalendarIcon } from '@heroicons/react/24/outline';
 import { Post } from '@/types/post-editor';
 
-async function getPublishedPosts(
-  limit?: number
-): Promise<Pick<Post, 'id' | 'title' | 'slug' | 'content' | 'createdAt' | 'updatedAt'>[]> {
+async function getPublishedPosts(): Promise<
+  Pick<Post, 'id' | 'title' | 'slug' | 'content' | 'createdAt' | 'updatedAt'>[]
+> {
   try {
     const posts = await prisma.post.findMany({
       where: { published: true },
@@ -19,7 +19,6 @@ async function getPublishedPosts(
         updatedAt: true,
       },
       orderBy: { createdAt: 'desc' },
-      ...(limit && { take: limit }),
     });
     return posts;
   } catch (error) {
@@ -28,10 +27,16 @@ async function getPublishedPosts(
   }
 }
 
-export default async function CardContainer({ limit }: { limit?: number } = {}) {
-  const posts = await getPublishedPosts(limit);
+interface CardContainerProps {
+  limit: number;
+}
 
-  if (posts.length === 0) {
+export default async function CardContainer({ limit }: CardContainerProps) {
+  const posts = await getPublishedPosts();
+
+  const limitedPosts = limit ? posts.slice(0, limit) : posts;
+
+  if (limitedPosts.length === 0) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-semibold text-gray-600 dark:text-gray-400 mb-4">아직 발행된 포스트가 없습니다</h2>
@@ -41,7 +46,7 @@ export default async function CardContainer({ limit }: { limit?: number } = {}) 
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {posts.map(post => (
+      {limitedPosts.map(post => (
         <Link key={post.id} href={`/post/${post.slug}`}>
           <Card className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 h-48 bg-card border-border">
             <CardHeader className="pb-4">

@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "change-password": "node scripts/change-password.js",
-    "setup-admin": "node scripts/setup-admin.js"
+    "setup-admin": "node scripts/setup-admin.js",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
