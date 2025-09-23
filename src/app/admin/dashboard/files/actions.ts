@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { prisma, disconnectPrisma } from '@/lib/prisma';
 import { supabase } from '@/lib/supabase';
 
 export async function uploadFile(formData: FormData) {
@@ -23,15 +23,13 @@ export async function uploadFile(formData: FormData) {
     if (file.size > maxSize) {
       return {
         success: false,
-        error: '파일 크기는 10MB를 초과할 수 없습니다.'
+        error: '파일 크기는 10MB를 초과할 수 없습니다.',
       };
     }
 
     // 파일 확장자 검증
     const allowedExtensions = ['.pdf'];
-    const fileExtension = file.name
-      .toLowerCase()
-      .substring(file.name.lastIndexOf('.'));
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
     if (!allowedExtensions.includes(fileExtension)) {
       return { success: false, error: 'PDF 파일만 업로드 가능합니다.' };
     }
@@ -39,15 +37,13 @@ export async function uploadFile(formData: FormData) {
     // 기존 파일 삭제 (같은 타입의 파일이 있다면)
     const existingFile = await prisma.fileUpload.findFirst({
       where: { fileType: fileType },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
 
     if (existingFile) {
       // Supabase Storage에서 기존 파일 삭제
       const existingFilePath = `uploads/${existingFile.fileType}/${existingFile.filename}`;
-      const { error: deleteError } = await supabase.storage
-        .from('files')
-        .remove([existingFilePath]);
+      const { error: deleteError } = await supabase.storage.from('files').remove([existingFilePath]);
 
       if (deleteError) {
         console.error('기존 파일 삭제 오류:', deleteError);
@@ -56,7 +52,7 @@ export async function uploadFile(formData: FormData) {
 
       // 데이터베이스에서 기존 파일 정보 삭제
       await prisma.fileUpload.delete({
-        where: { id: existingFile.id }
+        where: { id: existingFile.id },
       });
     }
 
@@ -67,12 +63,10 @@ export async function uploadFile(formData: FormData) {
     const filePath = `uploads/${fileType}/${uniqueFilename}`;
 
     // Supabase Storage에 파일 업로드
-    const { error: uploadError } = await supabase.storage
-      .from('files')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+    const { error: uploadError } = await supabase.storage.from('files').upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
 
     if (uploadError) {
       console.error('Supabase 업로드 오류:', uploadError);
@@ -80,9 +74,7 @@ export async function uploadFile(formData: FormData) {
     }
 
     // 공개 URL 생성
-    const { data: urlData } = supabase.storage
-      .from('files')
-      .getPublicUrl(filePath);
+    const { data: urlData } = supabase.storage.from('files').getPublicUrl(filePath);
 
     // 데이터베이스에 파일 정보 저장
     const fileUpload = await prisma.fileUpload.create({
@@ -92,30 +84,33 @@ export async function uploadFile(formData: FormData) {
         fileType: fileType,
         fileSize: file.size,
         fileUrl: urlData.publicUrl,
-        uploadedBy: uploadedBy
-      }
+        uploadedBy: uploadedBy,
+      },
     });
 
     return {
       success: true,
       data: fileUpload,
-      message: `${
-        fileType === 'resume' ? '이력서' : '포트폴리오'
-      }가 성공적으로 업로드되었습니다.`
+      message: `${fileType === 'resume' ? '이력서' : '포트폴리오'}가 성공적으로 업로드되었습니다.`,
     };
   } catch (error) {
     console.error('파일 업로드 오류:', error);
     return {
       success: false,
-      error: '파일 업로드 중 오류가 발생했습니다.'
+      error: '파일 업로드 중 오류가 발생했습니다.',
     };
+  } finally {
+    // 서버리스 환경에서 연결 정리
+    if (process.env.NODE_ENV === 'production') {
+      await disconnectPrisma();
+    }
   }
 }
 
 export async function getFileUploads() {
   try {
     const files = await prisma.fileUpload.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
 
     return { success: true, data: files };
@@ -123,8 +118,13 @@ export async function getFileUploads() {
     console.error('파일 목록 조회 오류:', error);
     return {
       success: false,
-      error: '파일 목록을 불러오는 중 오류가 발생했습니다.'
+      error: '파일 목록을 불러오는 중 오류가 발생했습니다.',
     };
+  } finally {
+    // 서버리스 환경에서 연결 정리
+    if (process.env.NODE_ENV === 'production') {
+      await disconnectPrisma();
+    }
   }
 }
 
@@ -132,7 +132,7 @@ export async function deleteFile(fileId: string) {
   try {
     // 파일 정보 조회
     const file = await prisma.fileUpload.findUnique({
-      where: { id: fileId }
+      where: { id: fileId },
     });
 
     if (!file) {
@@ -141,9 +141,7 @@ export async function deleteFile(fileId: string) {
 
     // Supabase Storage에서 파일 삭제
     const filePath = `uploads/${file.fileType}/${file.filename}`;
-    const { error: deleteError } = await supabase.storage
-      .from('files')
-      .remove([filePath]);
+    const { error: deleteError } = await supabase.storage.from('files').remove([filePath]);
 
     if (deleteError) {
       console.error('Supabase 삭제 오류:', deleteError);
@@ -152,19 +150,24 @@ export async function deleteFile(fileId: string) {
 
     // 데이터베이스에서 파일 정보 삭제
     await prisma.fileUpload.delete({
-      where: { id: fileId }
+      where: { id: fileId },
     });
 
     return {
       success: true,
-      message: '파일이 성공적으로 삭제되었습니다.'
+      message: '파일이 성공적으로 삭제되었습니다.',
     };
   } catch (error) {
     console.error('파일 삭제 오류:', error);
     return {
       success: false,
-      error: '파일 삭제 중 오류가 발생했습니다.'
+      error: '파일 삭제 중 오류가 발생했습니다.',
     };
+  } finally {
+    // 서버리스 환경에서 연결 정리
+    if (process.env.NODE_ENV === 'production') {
+      await disconnectPrisma();
+    }
   }
 }
 
@@ -173,26 +176,31 @@ export async function getActiveFiles() {
     const [resume, portfolio] = await Promise.all([
       prisma.fileUpload.findFirst({
         where: { fileType: 'resume' },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       }),
       prisma.fileUpload.findFirst({
         where: { fileType: 'portfolio' },
-        orderBy: { createdAt: 'desc' }
-      })
+        orderBy: { createdAt: 'desc' },
+      }),
     ]);
 
     return {
       success: true,
       data: {
         resume: resume?.fileUrl || null,
-        portfolio: portfolio?.fileUrl || null
-      }
+        portfolio: portfolio?.fileUrl || null,
+      },
     };
   } catch (error) {
     console.error('활성 파일 조회 오류:', error);
     return {
       success: false,
-      error: '파일 정보를 불러오는 중 오류가 발생했습니다.'
+      error: '파일 정보를 불러오는 중 오류가 발생했습니다.',
     };
+  } finally {
+    // 서버리스 환경에서 연결 정리
+    if (process.env.NODE_ENV === 'production') {
+      await disconnectPrisma();
+    }
   }
 }

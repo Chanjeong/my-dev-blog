@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { prisma, disconnectPrisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { JWTPayload } from '@/types/jwt';
@@ -112,6 +112,11 @@ export async function savePostAction(prevState: PostFormState, formData: FormDat
   } catch (error) {
     console.error('포스트 저장 오류:', error);
     return { success: false, error: '포스트 저장 중 오류가 발생했습니다.' };
+  } finally {
+    // 서버리스 환경에서 연결 정리
+    if (process.env.NODE_ENV === 'production') {
+      await disconnectPrisma();
+    }
   }
 }
 
@@ -135,5 +140,10 @@ export async function deletePostAction(postId: string): Promise<PostFormState> {
   } catch (error) {
     console.error('포스트 삭제 오류:', error);
     return { success: false, error: '포스트 삭제 중 오류가 발생했습니다.' };
+  } finally {
+    // 서버리스 환경에서 연결 정리
+    if (process.env.NODE_ENV === 'production') {
+      await disconnectPrisma();
+    }
   }
 }

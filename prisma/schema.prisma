@@ -23,18 +23,6 @@ model Post {
   @@map("posts")
 }
 
-// 연락처 메시지 모델
-model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  message   String
-  createdAt DateTime @default(now())
-  read      Boolean  @default(false)
-
-  @@map("contact_messages")
-}
-
 // 관리자 인증 모델
 model Admin {
   id        String   @id @default(cuid())
