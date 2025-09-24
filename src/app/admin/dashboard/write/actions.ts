@@ -5,7 +5,6 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { JWTPayload } from '@/types/jwt';
 import { revalidatePath } from 'next/cache';
-// slugify import 제거 - 한글 친화적 slug 생성 함수 사용
 import { PostFormState } from '@/types/post-editor';
 
 async function checkAuth(): Promise<boolean> {
@@ -106,8 +105,7 @@ export async function savePostAction(prevState: PostFormState, formData: FormDat
     revalidatePath('/posts');
 
     return { success: true, error: null, postId: result.id };
-  } catch (error) {
-    console.error('포스트 저장 오류:', error);
+  } catch {
     return { success: false, error: '포스트 저장 중 오류가 발생했습니다.' };
   } finally {
     // 서버리스 환경에서 연결 정리
@@ -134,8 +132,7 @@ export async function deletePostAction(postId: string): Promise<PostFormState> {
     revalidatePath('/posts');
 
     return { success: true, error: null };
-  } catch (error) {
-    console.error('포스트 삭제 오류:', error);
+  } catch {
     return { success: false, error: '포스트 삭제 중 오류가 발생했습니다.' };
   } finally {
     // 서버리스 환경에서 연결 정리

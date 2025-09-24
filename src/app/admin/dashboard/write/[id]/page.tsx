@@ -41,8 +41,7 @@ export default async function EditPage({ params }: EditPageProps) {
         }}
       />
     );
-  } catch (error) {
-    console.error('포스트 로드 오류:', error);
+  } catch {
     notFound();
   }
 }

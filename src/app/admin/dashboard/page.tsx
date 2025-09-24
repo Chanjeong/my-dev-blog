@@ -52,8 +52,7 @@ async function getDashboardData() {
       },
       recentPosts: formattedRecentPosts,
     };
-  } catch (error) {
-    console.error('대시보드 데이터 가져오기 오류:', error);
+  } catch {
     return {
       stats: { totalPosts: 0, publishedPosts: 0, draftPosts: 0 },
       recentPosts: [],

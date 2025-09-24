@@ -3,6 +3,10 @@
 import { prisma, disconnectPrisma } from '@/lib/prisma';
 import { supabase } from '@/lib/supabase';
 
+// 상수 정의
+const ALLOWED_EXTENSIONS = ['.pdf'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 export async function uploadFile(formData: FormData) {
   try {
     const file = formData.get('file') as File;
@@ -19,8 +23,7 @@ export async function uploadFile(formData: FormData) {
     }
 
     // 파일 크기 검증 (10MB 제한)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
+    if (file.size > MAX_FILE_SIZE) {
       return {
         success: false,
         error: '파일 크기는 10MB를 초과할 수 없습니다.',
@@ -28,9 +31,8 @@ export async function uploadFile(formData: FormData) {
     }
 
     // 파일 확장자 검증
-    const allowedExtensions = ['.pdf'];
     const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    if (!allowedExtensions.includes(fileExtension)) {
+    if (!ALLOWED_EXTENSIONS.includes(fileExtension)) {
       return { success: false, error: 'PDF 파일만 업로드 가능합니다.' };
     }
 
@@ -83,7 +85,6 @@ export async function uploadFile(formData: FormData) {
     });
 
     if (uploadError) {
-      console.error('Supabase 업로드 오류:', uploadError);
       return { success: false, error: '파일 업로드 중 오류가 발생했습니다.' };
     }
 
@@ -100,8 +101,7 @@ export async function uploadFile(formData: FormData) {
       data: fileUpload,
       message: `${fileType === 'resume' ? '이력서' : '포트폴리오'}가 성공적으로 업로드되었습니다.`,
     };
-  } catch (error) {
-    console.error('파일 업로드 오류:', error);
+  } catch {
     return {
       success: false,
       error: '파일 업로드 중 오류가 발생했습니다.',
@@ -121,8 +121,7 @@ export async function getFileUploads() {
     });
 
     return { success: true, data: files };
-  } catch (error) {
-    console.error('파일 목록 조회 오류:', error);
+  } catch {
     return {
       success: false,
       error: '파일 목록을 불러오는 중 오류가 발생했습니다.',
@@ -151,7 +150,6 @@ export async function deleteFile(fileId: string) {
     const { error: deleteError } = await supabase.storage.from('files').remove([filePath]);
 
     if (deleteError) {
-      console.error('Supabase 삭제 오류:', deleteError);
       // 파일이 이미 삭제되었을 수도 있으므로 계속 진행
     }
 
@@ -164,8 +162,7 @@ export async function deleteFile(fileId: string) {
       success: true,
       message: '파일이 성공적으로 삭제되었습니다.',
     };
-  } catch (error) {
-    console.error('파일 삭제 오류:', error);
+  } catch {
     return {
       success: false,
       error: '파일 삭제 중 오류가 발생했습니다.',
@@ -198,8 +195,7 @@ export async function getActiveFiles() {
         portfolio: portfolio?.fileUrl || null,
       },
     };
-  } catch (error) {
-    console.error('활성 파일 조회 오류:', error);
+  } catch {
     return {
       success: false,
       error: '파일 정보를 불러오는 중 오류가 발생했습니다.',

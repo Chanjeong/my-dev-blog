@@ -61,8 +61,7 @@ export async function loginAction(prevState: LoginState, formData: FormData): Pr
     });
 
     return { success: true, error: null };
-  } catch (error) {
-    console.error('로그인 오류:', error);
+  } catch {
     return { success: false, error: '서버 오류가 발생했습니다.' };
   } finally {
     // 서버리스 환경에서 연결 정리

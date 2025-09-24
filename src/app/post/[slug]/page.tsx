@@ -21,8 +21,7 @@ export async function generateStaticParams() {
     return posts.map(post => ({
       slug: post.slug,
     }));
-  } catch (error) {
-    console.error('generateStaticParams 오류:', error);
+  } catch {
     return [];
   }
 }
@@ -57,17 +56,16 @@ export async function generateMetadata({ params }: PostPageProps) {
         ?.trim() || '';
 
     return {
-      title: `${post.title} | 개발 블로그`,
-      description: firstParagraph || '개발 블로그 포스트입니다.',
+      title: post.title,
+      description: firstParagraph,
       openGraph: {
         title: post.title,
-        description: firstParagraph || '개발 블로그 포스트입니다.',
+        description: firstParagraph,
         type: 'article',
         publishedTime: post.createdAt.toISOString(),
       },
     };
-  } catch (error) {
-    console.error('메타데이터 생성 오류:', error);
+  } catch {
     notFound();
   }
 }

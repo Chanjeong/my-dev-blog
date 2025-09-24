@@ -19,8 +19,7 @@ async function getPublishedPosts(): Promise<Pick<Post, 'id' | 'title' | 'slug' |
       orderBy: { createdAt: 'desc' },
     });
     return posts;
-  } catch (error) {
-    console.error('포스트를 가져오는 중 오류 발생:', error);
+  } catch {
     return [];
   }
 }

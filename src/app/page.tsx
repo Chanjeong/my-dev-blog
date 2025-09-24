@@ -57,10 +57,9 @@ export default function Home() {
         <section className="py-16 px-6">
           <div className="max-w-6xl mx-auto">
             <div className="text-center space-y-6">
-              <h1 className="text-3xl font-normal text-foreground">한 개발자의 기술 여정</h1>
               <p className="text-md text-muted-foreground max-w-3xl mx-auto italic">
-                안녕하세요 프론트엔드 개발자 박찬정입니다. 배우고 싶거나 영감 받은 점들을 담아두고 있습니다. 부족한
-                글이라도 읽으러 와주셔서 진심으로 감사합니다. 머무는 시간만큼은 좋은 기억이셨으면 좋겠습니다.
+                안녕하세요 프론트엔드 개발자 박찬정입니다. 배우고 싶거나 영감 받은 점들을 담아두고 있습니다.
+                <br /> 머무는 시간만큼은 좋은 기억이셨으면 좋겠습니다.
               </p>
 
               <div className="flex justify-center items-center gap-8 text-muted-foreground">
@@ -68,7 +67,7 @@ export default function Home() {
                   href="https://velog.io/@jeongchanpark/posts"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer group"
+                  className="flex items-center gap-2 hover:text-primary transition-colors group"
                 >
                   <DocumentTextIcon className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
                   <span>이전 블로그</span>
@@ -85,7 +84,7 @@ export default function Home() {
               <h2 className="text-3xl font-bold text-foreground">최신 글</h2>
               <Link href="/posts">
                 <Button variant="ghost" className="text-primary hover:text-primary/80">
-                  <p className="font-extrabold">모든글 보기</p>
+                  <span className="font-extrabold">모든글 보기</span>
                   <ArrowRightIcon className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -95,36 +94,34 @@ export default function Home() {
           </div>
         </section>
 
-        <div className=" bg-background text-foreground">
-          <main className="pt-20 px-6">
-            <div className="max-w-6xl mx-auto space-y-12">
-              {/* 헤더 */}
-              <div className="text-center space-y-4">
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto italic">
-                  개발 외에도 다양한 것들에 관심이 많아요. 공감하시면 연락한번 주세요:)
-                </p>
-              </div>
-
-              {/* 취미 카드들 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {hobbies.map((hobby, index) => (
-                  <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:scale-105">
-                    <CardHeader className="pb-4">
-                      <div
-                        className={`w-16 h-16 bg-gradient-to-br ${hobby.color} rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}
-                      >
-                        {hobby.icon}
-                      </div>
-                      <CardTitle className="text-xl font-semibold">{hobby.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-muted-foreground leading-relaxed">{hobby.description}</div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+        <div className="pt-20 px-6">
+          <div className="max-w-6xl mx-auto space-y-12">
+            {/* 헤더 */}
+            <div className="text-center space-y-4">
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto italic">
+                개발 외에도 다양한 것들에 관심이 많아요. 공감하시면 연락한번 주세요:)
+              </p>
             </div>
-          </main>
+
+            {/* 취미 카드들 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {hobbies.map((hobby, index) => (
+                <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:scale-105">
+                  <CardHeader className="pb-4">
+                    <div
+                      className={`w-16 h-16 bg-gradient-to-br ${hobby.color} rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}
+                    >
+                      {hobby.icon}
+                    </div>
+                    <CardTitle className="text-xl font-semibold">{hobby.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-muted-foreground leading-relaxed">{hobby.description}</div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     </div>
