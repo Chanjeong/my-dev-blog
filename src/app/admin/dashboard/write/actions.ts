@@ -101,8 +101,14 @@ export async function savePostAction(prevState: PostFormState, formData: FormDat
     });
 
     // 트랜잭션 성공 후 캐시 무효화
-    revalidatePath('/');
-    revalidatePath('/posts');
+    revalidatePath('/', 'layout');
+    revalidatePath('/posts', 'layout');
+    revalidatePath(`/post/${slug}`, 'page');
+
+    // 새 게시글인 경우 generateStaticParams 갱신을 위해 전체 post 경로 무효화
+    if (!postId) {
+      revalidatePath('/post', 'page');
+    }
 
     return { success: true, error: null, postId: result.id };
   } catch {
@@ -128,8 +134,9 @@ export async function deletePostAction(postId: string): Promise<PostFormState> {
     });
 
     // 게시글 삭제 후 정적 페이지 재생성
-    revalidatePath('/');
-    revalidatePath('/posts');
+    revalidatePath('/', 'layout');
+    revalidatePath('/posts', 'layout');
+    revalidatePath('/post', 'page');
 
     return { success: true, error: null };
   } catch {

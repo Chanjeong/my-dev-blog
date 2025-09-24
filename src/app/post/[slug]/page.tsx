@@ -26,6 +26,9 @@ export async function generateStaticParams() {
   }
 }
 
+// 동적 라우팅 허용 (새 게시글 접근 가능)
+export const dynamicParams = true;
+
 // 동적 메타데이터 생성
 export async function generateMetadata({ params }: PostPageProps) {
   const resolvedParams = await params;
