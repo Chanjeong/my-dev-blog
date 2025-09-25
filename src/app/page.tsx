@@ -1,4 +1,6 @@
-import CardContainer from '@/components/CardContainers';
+import { Suspense } from 'react';
+import CardContainer from '@/components/post/CardContainers';
+import CardContainerSkeleton from '@/components/post/CardContainerSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DocumentTextIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
@@ -90,7 +92,9 @@ export default async function Home() {
               </Link>
             </div>
 
-            <CardContainer limit={3} />
+            <Suspense fallback={<CardContainerSkeleton limit={3} />}>
+              <CardContainer limit={3} />
+            </Suspense>
           </div>
         </section>
 

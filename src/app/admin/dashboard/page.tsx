@@ -12,30 +12,31 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow',
 };
 
-// 최적화된 데이터 조회 (통계와 최근 포스트 분리)
+export const dynamic = 'force-dynamic';
+
+// 최적화된 데이터 조회 (1개 쿼리로 통합)
 async function getDashboardData() {
   try {
-    // 전체 통계를 위한 쿼리
-    const [totalCount, publishedCount, recentPosts] = await Promise.all([
-      prisma.post.count(),
-      prisma.post.count({ where: { published: true } }),
-      prisma.post.findMany({
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          published: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-        orderBy: { updatedAt: 'desc' },
-      }),
-    ]);
+    // 1개 쿼리로 모든 데이터 조회 (성능 최적화)
+    const posts = await prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
 
-    const draftCount = totalCount - publishedCount;
+    // 클라이언트에서 통계 계산
+    const totalCount = posts.length;
+    const publishedCount = posts.filter(p => p.published).length;
+    const draftCount = posts.filter(p => !p.published).length;
 
     // 최근 포스트 데이터 변환
-    const formattedRecentPosts = recentPosts.map(post => ({
+    const formattedRecentPosts = posts.map(post => ({
       id: post.id,
       title: post.title,
       slug: post.slug,

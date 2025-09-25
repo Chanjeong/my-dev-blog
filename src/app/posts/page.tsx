@@ -1,4 +1,6 @@
-import CardContainer from '@/components/CardContainers';
+import { Suspense } from 'react';
+import CardContainer from '@/components/post/CardContainers';
+import CardContainerSkeleton from '@/components/post/CardContainerSkeleton';
 
 export default async function PostsPage() {
   return (
@@ -11,7 +13,9 @@ export default async function PostsPage() {
           </div>
 
           {/* 게시글 목록 - CardContainer 재사용 (리스트 레이아웃) */}
-          <CardContainer limit={0} layout="list" />
+          <Suspense fallback={<CardContainerSkeleton limit={0} layout="list" />}>
+            <CardContainer limit={0} layout="list" />
+          </Suspense>
         </div>
       </main>
     </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Noto_Serif_KR } from 'next/font/google';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import Navigation from '@/components/Navigation';
+import { ThemeProvider } from '@/components/layout/ThemeProvider';
+import Navigation from '@/components/layout/Navigation';
 import './globals.css';
 
 const notoSerifKR = Noto_Serif_KR({
