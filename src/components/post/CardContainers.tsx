@@ -5,22 +5,38 @@ import { CalendarIcon } from '@heroicons/react/24/outline';
 import { Post } from '@/types/post-editor';
 
 async function getPublishedPosts(): Promise<Pick<Post, 'id' | 'title' | 'slug' | 'createdAt' | 'updatedAt'>[]> {
-  try {
-    const posts = await prisma.post.findMany({
-      where: { published: true },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    return posts;
-  } catch {
-    return [];
+  let retries = 3;
+
+  while (retries > 0) {
+    try {
+      const posts = await prisma.post.findMany({
+        where: { published: true },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      // 빈 배열이면 재시도
+      if (posts.length === 0 && retries > 1) {
+        retries--;
+        await new Promise(resolve => setTimeout(resolve, 500)); // 0.5초 대기
+        continue;
+      }
+
+      return posts;
+    } catch {
+      retries--;
+      if (retries === 0) return [];
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
   }
+
+  return [];
 }
 
 interface CardContainerProps {
