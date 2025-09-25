@@ -13,7 +13,11 @@ export default function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return null;
+    return (
+      <button className="p-2 rounded-md transition-colors" aria-label="Toggle theme">
+        <div className="h-6 w-6"></div>
+      </button>
+    );
   }
 
   const current = resolvedTheme ?? theme;

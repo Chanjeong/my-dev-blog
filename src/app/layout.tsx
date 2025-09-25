@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     shortcut: '/logo.svg',
     apple: '/logo.svg',
   },
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
 };
 

@@ -12,7 +12,6 @@ async function getPublishedPosts(): Promise<Pick<Post, 'id' | 'title' | 'slug' |
         id: true,
         title: true,
         slug: true,
-        // content 제거 - 홈페이지에서는 필요 없음 (성능 최적화)
         createdAt: true,
         updatedAt: true,
       },
