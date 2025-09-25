@@ -2,6 +2,7 @@
 
 import { prisma, disconnectPrisma } from '@/lib/prisma';
 import { supabase } from '@/lib/supabase';
+import { revalidatePath } from 'next/cache';
 
 // 상수 정의
 const ALLOWED_EXTENSIONS = ['.pdf'];
@@ -96,6 +97,9 @@ export async function uploadFile(formData: FormData) {
       data: { fileUrl: urlData.publicUrl },
     });
 
+    // Navigation 새로고침 (레이아웃 전체)
+    revalidatePath('/', 'layout');
+
     return {
       success: true,
       data: fileUpload,
@@ -157,6 +161,9 @@ export async function deleteFile(fileId: string) {
     await prisma.fileUpload.delete({
       where: { id: fileId },
     });
+
+    // Navigation 새로고침 (레이아웃 전체)
+    revalidatePath('/', 'layout');
 
     return {
       success: true,
