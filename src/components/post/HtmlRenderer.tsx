@@ -1,8 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import 'highlight.js/styles/github.css';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';
 import '@/styles/tiptap.css';
+
+// 필요한 언어들 import
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-python';
 
 interface HtmlRendererProps {
   content: string;
@@ -18,8 +24,21 @@ export default function HtmlRenderer({ content }: HtmlRendererProps) {
         link.setAttribute('target', '_blank');
         link.setAttribute('rel', 'noopener noreferrer');
       });
+
+      // Prism.js로 코드 블록 구문 강조 적용
+      const codeBlocks = contentRef.current.querySelectorAll('pre code');
+      codeBlocks.forEach(block => {
+        Prism.highlightElement(block);
+      });
     }
   }, [content]);
 
-  return <div ref={contentRef} className="max-w-none ProseMirror" dangerouslySetInnerHTML={{ __html: content }} />;
+  return (
+    <div
+      ref={contentRef}
+      className="max-w-none ProseMirror"
+      dangerouslySetInnerHTML={{ __html: content }}
+      suppressHydrationWarning={true}
+    />
+  );
 }

@@ -120,12 +120,13 @@
   font-weight: 500;
 }
 
-/* 코드 블록 스타일 - lowlight가 생성하는 HTML에 맞춤 */
+/* 코드 블록 스타일 */
 .ProseMirror pre {
   background: var(--background);
   border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
   padding: 1rem;
+  color: var(--foreground);
   margin: 1rem 0;
   overflow-x: auto;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -133,11 +134,68 @@
   line-height: 1.5;
 }
 
+/* Prism.js 기본 스타일 오버라이드 */
+code[class*='language-'],
+pre[class*='language-'] {
+  text-shadow: none !important;
+}
+
+/* 인라인 코드와 코드 블록 배경색 통일 */
+:not(pre) > code[class*='language-'],
+pre[class*='language-'] {
+  background: var(--background) !important;
+  text-shadow: none;
+}
+
+/* Prism.js 구문 강조 색상 - CSS 변수 사용으로 다크모드 자동 적용 */
+.ProseMirror pre code .token.comment,
+.ProseMirror pre code .token.prolog,
+.ProseMirror pre code .token.doctype,
+.ProseMirror pre code .token.cdata {
+  color: #6a737d !important;
+  font-style: italic;
+}
+
+.ProseMirror pre code .token.punctuation {
+  color: #d73a49 !important;
+}
+
+.ProseMirror pre code .token.property,
+.ProseMirror pre code .token.tag,
+.ProseMirror pre code .token.boolean,
+.ProseMirror pre code .token.number,
+.ProseMirror pre code .token.constant,
+.ProseMirror pre code .token.symbol,
+.ProseMirror pre code .token.deleted {
+  color: #005cc5 !important;
+}
+
+.ProseMirror pre code .token.atrule,
+.ProseMirror pre code .token.attr-value,
+.ProseMirror pre code .token.keyword {
+  color: #6f42c1 !important;
+  font-weight: bold;
+}
+
+.ProseMirror pre code .token.function,
+.ProseMirror pre code .token.class-name {
+  color: #6f42c1 !important;
+  font-weight: bold;
+}
+
+.ProseMirror pre code .token.operator,
+.ProseMirror pre code .token.entity,
+.ProseMirror pre code .token.url {
+  color: #d73a49 !important;
+  background: transparent;
+}
+
 .ProseMirror pre code {
   background: transparent;
   color: inherit;
   padding: 0;
   border-radius: 0;
+  color: var(--foreground);
 }
 
 /* 링크 스타일 */

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, Image as ImageIcon } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { toast } from 'sonner';
 
@@ -131,4 +131,3 @@ export default function ImageUploadButton({
     </div>
   );
 }
-

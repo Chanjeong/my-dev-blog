@@ -5,11 +5,9 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Code from '@tiptap/extension-code';
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import CodeBlock from '@tiptap/extension-code-block';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
-import { createLowlight, common } from 'lowlight';
-import 'highlight.js/styles/github.css';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { toast } from 'sonner';
 import { useEffect, useState, useCallback } from 'react';
@@ -22,9 +20,6 @@ interface TiptapEditorProps {
   placeholder?: string;
   className?: string;
 }
-
-// lowlight 인스턴스 생성 (컴포넌트 외부에서 한 번만)
-const lowlight = createLowlight(common);
 
 export default function TiptapEditor({
   content,
@@ -43,7 +38,7 @@ export default function TiptapEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        codeBlock: false, // CodeBlockLowlight로 대체
+        codeBlock: false, // CodeBlock으로 대체
         code: false, // Code extension으로 대체
       }),
       Code.configure({
@@ -62,8 +57,10 @@ export default function TiptapEditor({
           class: 'text-blue-600 hover:text-blue-800 underline',
         },
       }),
-      CodeBlockLowlight.configure({
-        lowlight, // 재사용 가능한 인스턴스
+      CodeBlock.configure({
+        HTMLAttributes: {
+          class: 'language-',
+        },
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
