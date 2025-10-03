@@ -47,6 +47,28 @@ export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
     }
   };
 
+  // velog 방식의 서식 적용 함수
+  const handleFormatWithText = (formatFn: () => void, placeholder: string) => {
+    const { from, to } = editor.state.selection;
+    const selectedText = editor.state.doc.textBetween(from, to);
+
+    // 선택된 텍스트가 없거나 빈 문자열인 경우
+    if (!selectedText.trim()) {
+      // 현재 커서 위치에 플레이스홀더 텍스트 삽입
+      editor.chain().focus().insertContent(placeholder).run();
+
+      // 삽입한 텍스트를 선택하기 위해 위치 계산
+      const newFrom = from;
+      const newTo = from + placeholder.length;
+
+      // 텍스트 선택
+      editor.chain().setTextSelection({ from: newFrom, to: newTo }).run();
+    }
+
+    // 서식 적용
+    formatFn();
+  };
+
   return (
     <div className="border-b border-gray-200 dark:border-gray-700 p-2 flex flex-wrap gap-1">
       {/* 실행취소/재실행 */}
@@ -139,7 +161,7 @@ export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
           size="sm"
           onClick={e => {
             e.preventDefault();
-            editor.chain().focus().toggleBold().run();
+            handleFormatWithText(() => editor.chain().focus().toggleBold().run(), '텍스트');
           }}
           title="굵게"
         >
@@ -151,7 +173,7 @@ export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
           size="sm"
           onClick={e => {
             e.preventDefault();
-            editor.chain().focus().toggleItalic().run();
+            handleFormatWithText(() => editor.chain().focus().toggleItalic().run(), '텍스트');
           }}
           title="기울임"
         >
@@ -163,7 +185,7 @@ export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
           size="sm"
           onClick={e => {
             e.preventDefault();
-            editor.chain().focus().toggleStrike().run();
+            handleFormatWithText(() => editor.chain().focus().toggleStrike().run(), '텍스트');
           }}
           title="취소선"
         >
@@ -175,7 +197,7 @@ export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
           size="sm"
           onClick={e => {
             e.preventDefault();
-            editor.chain().focus().toggleCode().run();
+            handleFormatWithText(() => editor.chain().focus().toggleCode().run(), '코드');
           }}
           title="인라인 코드"
         >

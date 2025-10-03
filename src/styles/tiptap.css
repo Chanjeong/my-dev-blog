@@ -5,7 +5,7 @@
   outline: none;
   padding: 1rem;
   min-height: 600px;
-  line-height: 1.6;
+  line-height: 1.7;
   font-size: 16px;
   color: hsl(var(--foreground));
 }
@@ -46,7 +46,7 @@
 /* 문단 스타일 */
 .ProseMirror p {
   margin: 0.75rem 0;
-  line-height: 1.2;
+  line-height: 1.7;
 }
 
 /* 목록 스타일 */
@@ -61,13 +61,28 @@
 }
 
 .ProseMirror ol {
-  list-style-type: decimal;
+  list-style-type: none;
+  counter-reset: list-counter;
 }
 
 .ProseMirror li {
   margin: 0.25rem 0;
-  line-height: 1.6;
+  line-height: 1.7;
   display: list-item;
+}
+
+.ProseMirror ol li {
+  counter-increment: list-counter;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.ProseMirror ol li::before {
+  content: counter(list-counter) '. ';
+  position: absolute;
+  left: 0;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
 }
 
 .ProseMirror li::marker {
