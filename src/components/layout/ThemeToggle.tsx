@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -20,12 +20,14 @@ export default function ThemeToggle() {
     );
   }
 
+  const current = resolvedTheme ?? theme;
+
+  const handleToggle = () => {
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  };
+
   return (
-    <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 rounded-md transition-colors"
-      aria-label="Toggle theme"
-    >
+    <button onClick={handleToggle} className="p-2 rounded-md transition-colors" aria-label="Toggle theme">
       {theme === 'dark' ? (
         <SunIcon className="h-6 w-6 text-yellow-500" />
       ) : (
@@ -34,5 +36,3 @@ export default function ThemeToggle() {
     </button>
   );
 }
-
-

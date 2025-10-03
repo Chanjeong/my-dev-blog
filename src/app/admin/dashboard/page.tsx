@@ -12,20 +12,31 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow',
 };
 
-// 모든 데이터를 한 번에 가져오기 (관리자용 최적화)
+export const dynamic = 'force-dynamic';
+
+// 최적화된 데이터 조회 (1개 쿼리로 통합)
 async function getDashboardData() {
   try {
-    const allPosts = await prisma.post.findMany({
+    // 1개 쿼리로 모든 데이터 조회 (성능 최적화)
+    const posts = await prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: { updatedAt: 'desc' },
     });
 
-    // 통계 계산
-    const totalPosts = allPosts.length;
-    const publishedCount = allPosts.filter(post => post.published).length;
-    const draftCount = allPosts.filter(post => !post.published).length;
+    // 클라이언트에서 통계 계산
+    const totalCount = posts.length;
+    const publishedCount = posts.filter(p => p.published).length;
+    const draftCount = posts.filter(p => !p.published).length;
 
-    // 최근 5개 게시글 (Date 객체를 문자열로 변환, content 제외)
-    const recentPosts = allPosts.slice(0, 5).map(post => ({
+    // 최근 포스트 데이터 변환
+    const formattedRecentPosts = posts.map(post => ({
       id: post.id,
       title: post.title,
       slug: post.slug,
@@ -36,14 +47,13 @@ async function getDashboardData() {
 
     return {
       stats: {
-        totalPosts,
+        totalPosts: totalCount,
         publishedPosts: publishedCount,
         draftPosts: draftCount,
       },
-      recentPosts,
+      recentPosts: formattedRecentPosts,
     };
-  } catch (error) {
-    console.error('대시보드 데이터 가져오기 오류:', error);
+  } catch {
     return {
       stats: { totalPosts: 0, publishedPosts: 0, draftPosts: 0 },
       recentPosts: [],

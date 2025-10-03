@@ -2,15 +2,12 @@
 
 import { LoginState } from '@/types/admin';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
+import { prisma, disconnectPrisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { JWTPayload } from '@/types/jwt';
 
-export async function loginAction(
-  prevState: LoginState,
-  formData: FormData
-): Promise<LoginState> {
+export async function loginAction(prevState: LoginState, formData: FormData): Promise<LoginState> {
   const password = formData.get('password') as string;
   const secretKey = formData.get('secretKey') as string;
 
@@ -23,7 +20,7 @@ export async function loginAction(
     if (secretKey !== process.env.ADMIN_SECRET_KEY) {
       return {
         success: false,
-        error: '비밀키가 올바르지 않습니다.'
+        error: '비밀키가 올바르지 않습니다.',
       };
     }
 
@@ -40,7 +37,7 @@ export async function loginAction(
     if (!isValidPassword) {
       return {
         success: false,
-        error: '비밀번호가 올바르지 않습니다.'
+        error: '비밀번호가 올바르지 않습니다.',
       };
     }
 
@@ -49,7 +46,7 @@ export async function loginAction(
       {
         adminId: admin.id,
         timestamp: Date.now(),
-        role: 'admin'
+        role: 'admin',
       },
       process.env.JWT_SECRET!,
       { expiresIn: '1h' }
@@ -60,13 +57,17 @@ export async function loginAction(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 3600 // 1시간
+      maxAge: 3600, // 1시간
     });
 
     return { success: true, error: null };
-  } catch (error) {
-    console.error('로그인 오류:', error);
+  } catch {
     return { success: false, error: '서버 오류가 발생했습니다.' };
+  } finally {
+    // 서버리스 환경에서 연결 정리
+    if (process.env.NODE_ENV === 'production') {
+      await disconnectPrisma();
+    }
   }
 }
 

@@ -20,19 +20,11 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // 성능 최적화를 위한 인덱스 추가
+  @@index([published, createdAt(sort: Desc)]) // 발행된 포스트 조회 최적화
+  @@index([published]) // published 필드 인덱스
+  @@index([createdAt(sort: Desc)]) // 최신 포스트 조회 최적화
   @@map("posts")
-}
-
-// 연락처 메시지 모델
-model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  message   String
-  createdAt DateTime @default(now())
-  read      Boolean  @default(false)
-
-  @@map("contact_messages")
 }
 
 // 관리자 인증 모델
@@ -56,5 +48,8 @@ model FileUpload {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // 성능 최적화를 위한 인덱스 추가
+  @@index([fileType, createdAt(sort: Desc)]) // 파일 타입별 최신 조회
+  @@index([fileType]) // 파일 타입 인덱스
   @@map("file_uploads")
 }

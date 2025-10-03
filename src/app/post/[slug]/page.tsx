@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import HtmlRenderer from '@/components/HtmlRenderer';
+import HtmlRenderer from '@/components/post/HtmlRenderer';
+import PostSkeleton from '@/components/post/PostSkeleton';
 import { Post } from '@/types/post-editor';
 
 interface PostPageProps {
@@ -21,11 +23,13 @@ export async function generateStaticParams() {
     return posts.map(post => ({
       slug: post.slug,
     }));
-  } catch (error) {
-    console.error('generateStaticParams 오류:', error);
+  } catch {
     return [];
   }
 }
+
+// 동적 라우팅 허용 (새 게시글 접근 가능)
+export const dynamicParams = true;
 
 // 동적 메타데이터 생성
 export async function generateMetadata({ params }: PostPageProps) {
@@ -57,17 +61,16 @@ export async function generateMetadata({ params }: PostPageProps) {
         ?.trim() || '';
 
     return {
-      title: `${post.title} | 개발 블로그`,
-      description: firstParagraph || '개발 블로그 포스트입니다.',
+      title: post.title,
+      description: firstParagraph,
       openGraph: {
         title: post.title,
-        description: firstParagraph || '개발 블로그 포스트입니다.',
+        description: firstParagraph,
         type: 'article',
         publishedTime: post.createdAt.toISOString(),
       },
     };
-  } catch (error) {
-    console.error('메타데이터 생성 오류:', error);
+  } catch {
     notFound();
   }
 }
@@ -96,44 +99,52 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
   }
 }
 
-export default async function PostPage({ params }: PostPageProps) {
-  const resolvedParams = await params;
-  const decodedSlug = decodeURIComponent(resolvedParams.slug);
-
-  const post = await getPostBySlug(decodedSlug);
+// 포스트 콘텐츠 컴포넌트 (Suspense용)
+async function PostContent({ slug }: { slug: string }) {
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
   return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-3xl font-bold mb-4">{post.title}</CardTitle>
+
+        {/* 메타 정보 */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <span>
+              {new Date(post.createdAt).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </span>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        {/* HTML 콘텐츠 */}
+        <HtmlRenderer content={post.content} />
+      </CardContent>
+    </Card>
+  );
+}
+
+export default async function PostPage({ params }: PostPageProps) {
+  const resolvedParams = await params;
+  const decodedSlug = decodeURIComponent(resolvedParams.slug);
+
+  return (
     <div className="min-h-screen bg-background">
       <main className="pt-12 px-6">
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* 포스트 내용 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-3xl font-bold mb-4">{post.title}</CardTitle>
-
-              {/* 메타 정보 */}
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <span>
-                    {new Date(post.createdAt).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent>
-              {/* HTML 콘텐츠 */}
-              <HtmlRenderer content={post.content} />
-            </CardContent>
-          </Card>
+          <Suspense fallback={<PostSkeleton />}>
+            <PostContent slug={decodedSlug} />
+          </Suspense>
         </div>
       </main>
     </div>
