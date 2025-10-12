@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FileText, Trash2, ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
 import { getFileUploads, deleteFile, uploadFile } from '@/app/admin/dashboard/files/actions';
 import { FileUpload } from '@/types/file';
 
@@ -22,13 +21,13 @@ export default function FileManagementClient() {
       if (result.success && result.data) {
         setFiles(result.data);
       } else {
-        toast.error(`목록 조회 실패: ${result.error || '알 수 없는 오류가 발생했습니다.'}`);
+        alert(`목록 조회 실패: ${result.error || '알 수 없는 오류가 발생했습니다.'}`);
       }
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(`목록 조회 오류: ${error.message}`);
+        alert(`목록 조회 오류: ${error.message}`);
       } else {
-        toast.error('네트워크 오류: 서버에 연결할 수 없습니다.');
+        alert('네트워크 오류: 서버에 연결할 수 없습니다.');
       }
     } finally {
       setIsLoading(false);
@@ -42,7 +41,7 @@ export default function FileManagementClient() {
 
     // 파일 타입 검증
     if (file.type !== 'application/pdf') {
-      toast.error(`잘못된 파일 형식: ${file.type}. PDF 파일만 업로드 가능합니다.`);
+      alert(`잘못된 파일 형식: ${file.type}. PDF 파일만 업로드 가능합니다.`);
       return;
     }
 
@@ -50,7 +49,7 @@ export default function FileManagementClient() {
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      toast.error(`파일 크기 초과: ${fileSizeMB}MB. 최대 10MB까지 업로드 가능합니다.`);
+      alert(`파일 크기 초과: ${fileSizeMB}MB. 최대 10MB까지 업로드 가능합니다.`);
       return;
     }
 
@@ -63,19 +62,19 @@ export default function FileManagementClient() {
 
       const result = await uploadFile(formData);
       if (result.success) {
-        toast.success(result.message);
+        alert(result.message);
         event.target.value = '';
         fetchFiles(); // 파일 목록 새로고침
         // Navigation 컴포넌트에 파일 업데이트 알림
         window.dispatchEvent(new CustomEvent('fileUpdated'));
       } else {
-        toast.error(`업로드 실패: ${result.error || '알 수 없는 오류가 발생했습니다.'}`);
+        alert(`업로드 실패: ${result.error || '알 수 없는 오류가 발생했습니다.'}`);
       }
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(`업로드 오류: ${error.message}`);
+        alert(`업로드 오류: ${error.message}`);
       } else {
-        toast.error('네트워크 오류: 서버에 연결할 수 없습니다.');
+        alert('네트워크 오류: 서버에 연결할 수 없습니다.');
       }
     } finally {
       setIsLoading(false);
@@ -89,18 +88,18 @@ export default function FileManagementClient() {
     try {
       const result = await deleteFile(fileId);
       if (result.success) {
-        toast.success('파일이 성공적으로 삭제되었습니다.');
+        alert('파일이 성공적으로 삭제되었습니다.');
         fetchFiles();
         // Navigation 컴포넌트에 파일 업데이트 알림
         window.dispatchEvent(new CustomEvent('fileUpdated'));
       } else {
-        toast.error(`삭제 실패: ${result.error || '알 수 없는 오류가 발생했습니다.'}`);
+        alert(`삭제 실패: ${result.error || '알 수 없는 오류가 발생했습니다.'}`);
       }
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(`삭제 오류: ${error.message}`);
+        alert(`삭제 오류: ${error.message}`);
       } else {
-        toast.error('네트워크 오류: 서버에 연결할 수 없습니다.');
+        alert('네트워크 오류: 서버에 연결할 수 없습니다.');
       }
     }
   };

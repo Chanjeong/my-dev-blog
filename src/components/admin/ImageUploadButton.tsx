@@ -4,7 +4,6 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Image as ImageIcon } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { toast } from 'sonner';
 
 interface ImageUploadButtonProps {
   onImageUpload: (url: string, fileName: string) => void;
@@ -30,7 +29,7 @@ export default function ImageUploadButton({
 
     const file = files[0];
     if (!file.type.startsWith('image/')) {
-      toast.error('이미지 파일만 업로드할 수 있습니다.');
+      alert('이미지 파일만 업로드할 수 있습니다.');
       return;
     }
 
@@ -40,17 +39,14 @@ export default function ImageUploadButton({
   // 이미지 업로드 처리
   const handleImageUpload = async (file: File) => {
     setIsUploading(true);
-    const loadingToast = toast.loading('이미지를 업로드하는 중...', { duration: 0 });
 
     try {
       const result = await uploadImage(file);
       onImageUpload(result.url, result.fileName);
 
-      toast.dismiss(loadingToast);
-      toast.success('이미지가 업로드되었습니다!');
+      alert('이미지가 업로드되었습니다!');
     } catch (error) {
-      toast.dismiss(loadingToast);
-      toast.error(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.');
+      alert(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.');
     } finally {
       setIsUploading(false);
     }

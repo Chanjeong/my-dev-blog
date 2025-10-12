@@ -9,7 +9,6 @@ import CodeBlock from '@tiptap/extension-code-block';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { toast } from 'sonner';
 import { useEffect, useState, useCallback } from 'react';
 import TiptapToolbar from './TiptapToolbar';
 import '@/styles/tiptap.css';
@@ -33,6 +32,42 @@ export default function TiptapEditor({
   // 클라이언트 사이드에서만 마운트
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // 코드인지 판단하는 함수 - 더 엄격한 조건
+  const isCodeLike = useCallback((text: string): boolean => {
+    // 너무 짧으면 코드 아님
+    if (text.length < 10) return false;
+
+    let score = 0;
+
+    // JavaScript 키워드
+    if (/\b(const|let|var|function|class|import|export|return|async|await|if|else|for|while)\b/.test(text)) {
+      score += 3;
+    }
+
+    // 들여쓰기가 있는 여러 줄
+    if (/^\s{2,}/m.test(text)) {
+      score += 2;
+    }
+
+    // 괄호와 세미콜론 조합
+    if (/[{}\[\]();]/.test(text) && /;/.test(text)) {
+      score += 2;
+    }
+
+    // JavaScript 연산자
+    if (/=>|===|!==|\+\+|--/.test(text)) {
+      score += 2;
+    }
+
+    // 여러 줄
+    if ((text.match(/\n/g) || []).length >= 2) {
+      score += 1;
+    }
+
+    // 점수가 5 이상이면 코드로 판단
+    return score >= 5;
   }, []);
 
   const editor = useEditor({
@@ -93,6 +128,7 @@ export default function TiptapEditor({
         const items = event.clipboardData?.items;
         if (!items) return false;
 
+        // 이미지 처리
         for (const item of items) {
           if (item.type.startsWith('image/')) {
             event.preventDefault();
@@ -103,6 +139,24 @@ export default function TiptapEditor({
             }
           }
         }
+
+        // 텍스트 처리 - 코드인지 확인
+        const text = event.clipboardData?.getData('text/plain');
+        if (text && isCodeLike(text)) {
+          event.preventDefault();
+          // view.state.tr을 사용하여 현재 에디터 상태에 안전하게 접근
+          const { state } = view;
+          const { tr } = state;
+          const codeBlock = state.schema.nodes.codeBlock;
+
+          if (codeBlock) {
+            const node = codeBlock.create(null, state.schema.text(text));
+            const transaction = tr.replaceSelectionWith(node);
+            view.dispatch(transaction);
+          }
+          return true;
+        }
+
         return false;
       },
     },
@@ -111,8 +165,6 @@ export default function TiptapEditor({
   // 이미지 업로드 처리
   const handleImageUpload = useCallback(
     async (file: File) => {
-      const loadingToast = toast.loading('이미지를 업로드하는 중...', { duration: 0 });
-
       try {
         const result = await uploadImage(file);
 
@@ -127,11 +179,9 @@ export default function TiptapEditor({
             .run();
         }
 
-        toast.dismiss(loadingToast);
-        toast.success('이미지가 업로드되었습니다!');
+        alert('이미지가 업로드되었습니다!');
       } catch (error) {
-        toast.dismiss(loadingToast);
-        toast.error(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.');
+        alert(error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.');
       }
     },
     [uploadImage, editor]
