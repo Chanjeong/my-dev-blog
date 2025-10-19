@@ -49,7 +49,7 @@ export async function loginAction(prevState: LoginState, formData: FormData): Pr
         role: 'admin',
       },
       process.env.JWT_SECRET!,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
 
     // HttpOnly 쿠키로 설정
@@ -57,7 +57,7 @@ export async function loginAction(prevState: LoginState, formData: FormData): Pr
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 3600, // 1시간
+      maxAge: 86400, // 24시간 (24 * 60 * 60)
     });
 
     return { success: true, error: null };
