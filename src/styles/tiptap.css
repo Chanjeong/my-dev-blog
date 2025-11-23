@@ -222,6 +222,15 @@ pre[class*='language-'] {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
+/* 테이블 헤더 텍스트 색상 */
+.ProseMirror table th {
+  color: #000000;
+}
+
+.dark .ProseMirror table th {
+  color: #000000;
+}
+
 /* 플레이스홀더 스타일 */
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
