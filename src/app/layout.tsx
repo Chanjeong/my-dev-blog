@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import { Noto_Serif_KR } from 'next/font/google';
-import { ThemeProvider } from '@/components/layout/ThemeProvider';
-import Navigation from '@/components/layout/Navigation';
 import './globals.css';
 
 const notoSerifKR = Noto_Serif_KR({
@@ -32,12 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${notoSerifKR.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <Navigation />
-          {children}
-        </ThemeProvider>
-      </body>
+      <body className={`${notoSerifKR.variable} antialiased`}>{children}</body>
     </html>
   );
 }

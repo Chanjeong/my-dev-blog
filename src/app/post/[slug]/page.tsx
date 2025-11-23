@@ -1,9 +1,6 @@
-import { Suspense } from 'react';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import HtmlRenderer from '@/components/post/HtmlRenderer';
-import PostSkeleton from '@/components/post/PostSkeleton';
 import { Post } from '@/types/post-editor';
 
 interface PostPageProps {
@@ -99,7 +96,7 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
   }
 }
 
-// 포스트 콘텐츠 컴포넌트 (Suspense용)
+// 포스트 콘텐츠 컴포넌트
 async function PostContent({ slug }: { slug: string }) {
   const post = await getPostBySlug(slug);
 
@@ -108,29 +105,21 @@ async function PostContent({ slug }: { slug: string }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-3xl font-bold mb-4">{post.title}</CardTitle>
-
-        {/* 메타 정보 */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <span>
-              {new Date(post.createdAt).toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </span>
-          </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+        <div className="text-sm text-muted-foreground mb-8">
+          {new Date(post.createdAt).toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
         </div>
-      </CardHeader>
-
-      <CardContent>
-        {/* HTML 콘텐츠 */}
+      </div>
+      <div>
         <HtmlRenderer content={post.content} />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -139,13 +128,9 @@ export default async function PostPage({ params }: PostPageProps) {
   const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="pt-12 px-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <Suspense fallback={<PostSkeleton />}>
-            <PostContent slug={decodedSlug} />
-          </Suspense>
-        </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <main className="max-w-2xl mx-auto px-6 py-16">
+        <PostContent slug={decodedSlug} />
       </main>
     </div>
   );
