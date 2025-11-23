@@ -1,11 +1,4 @@
-import { Metadata } from 'next';
 import { Mail, Instagram } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'Contact | 개발 블로그',
-  description: '궁금한 것이 있으시면 언제든 연락주세요!',
-  robots: 'noindex, nofollow',
-};
 
 export default function ContactPage() {
   return (

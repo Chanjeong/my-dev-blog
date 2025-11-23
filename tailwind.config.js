@@ -9,7 +9,7 @@ const config = {
   theme: {
     extend: {
       fontFamily: {
-        'noto-serif-kr': ['var(--font-noto-serif-kr)', 'serif'],
+        'pretendard': ['var(--font-pretendard)', 'sans-serif'],
       },
 
       colors: {

@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
-import { Noto_Serif_KR } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
-const notoSerifKR = Noto_Serif_KR({
-  variable: '--font-noto-serif-kr',
-  subsets: ['latin'],
-  weight: ['400', '700'],
+const pretendard = localFont({
+  src: '../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2',
+  variable: '--font-pretendard',
   display: 'swap',
+  weight: '100 900',
+  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${notoSerifKR.variable} antialiased`}>{children}</body>
+      <body className={`${pretendard.variable} antialiased`}>{children}</body>
     </html>
   );
 }
