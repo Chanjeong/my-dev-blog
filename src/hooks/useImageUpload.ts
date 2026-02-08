@@ -16,6 +16,7 @@ export const useImageUpload = () => {
       const img = new Image();
 
       img.onload = () => {
+        URL.revokeObjectURL(img.src);
         const maxWidth = 1200;
         const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
         canvas.width = img.width * ratio;

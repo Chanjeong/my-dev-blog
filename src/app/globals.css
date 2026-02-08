@@ -25,30 +25,6 @@
   --radius: 0.75rem;
 }
 
-.dark {
-  --color-background: #111827;
-  --color-foreground: #ffffff;
-  --color-primary: #4ade80;
-  --color-primary-foreground: #111827;
-  --color-muted: #1f2937;
-  --color-muted-foreground: #9ca3af;
-  --color-border: #374151;
-  --color-input: #374151;
-  --color-ring: #4ade80;
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-  --color-secondary: #1f2937;
-  --color-secondary-foreground: #ffffff;
-  --color-accent: #1f2937;
-  --color-accent-foreground: #ffffff;
-  --color-popover: #111827;
-  --color-popover-foreground: #ffffff;
-  --color-card: #1f2937;
-  --color-card-foreground: #ffffff;
-  --color-nav: #1f2937;
-  --color-nav-foreground: #ffffff;
-}
-
 :root {
   --background: var(--color-background);
   --foreground: var(--color-foreground);
@@ -78,8 +54,4 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-pretendard), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.font-pretendard {
-  font-family: var(--font-pretendard);
 }

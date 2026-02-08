@@ -3,37 +3,19 @@ import Link from 'next/link';
 import { Post } from '@/types/post-editor';
 
 async function getPublishedPosts(): Promise<Pick<Post, 'id' | 'title' | 'slug' | 'createdAt' | 'updatedAt'>[]> {
-  let retries = 3;
+  const posts = await prisma.post.findMany({
+    where: { published: true },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
 
-  while (retries > 0) {
-    try {
-      const posts = await prisma.post.findMany({
-        where: { published: true },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      if (posts.length === 0 && retries > 1) {
-        retries--;
-        await new Promise(resolve => setTimeout(resolve, 500));
-        continue;
-      }
-
-      return posts;
-    } catch {
-      retries--;
-      if (retries === 0) return [];
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-  }
-
-  return [];
+  return posts;
 }
 
 interface PostListProps {

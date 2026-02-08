@@ -91,15 +91,14 @@
 
 /* 인용문 스타일 */
 .ProseMirror blockquote {
+  border: 2px solid var(--color-border);
   border-left: 6px solid hsl(var(--primary));
-  padding-left: 1.5rem;
+  padding: 1.5rem;
   margin: 1.5rem 0;
   font-style: italic;
   color: hsl(var(--foreground));
-  background: #1f2937;
-  padding: 1.5rem;
+  background: var(--color-muted);
   border-radius: 0.75rem;
-  border: 2px solid #374151;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -116,7 +115,7 @@
 
 /* 코드 블록 스타일 */
 .ProseMirror pre {
-  background: #1e293b;
+  background: var(--color-muted);
   border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
   padding: 1rem;
@@ -141,7 +140,7 @@ pre[class*='language-'] {
 }
 
 pre[class*='language-'] {
-  background: #1e293b !important;
+  background: var(--color-muted) !important;
   text-shadow: none;
 }
 
@@ -199,7 +198,7 @@ pre[class*='language-'] {
 /* 링크 스타일 */
 .ProseMirror a {
   text-decoration: underline;
-  color: red;
+  color: hsl(var(--primary));
   text-underline-offset: 2px;
 }
 
@@ -222,11 +221,7 @@ pre[class*='language-'] {
 
 /* 테이블 헤더 텍스트 색상 */
 .ProseMirror table th {
-  color: #000000;
-}
-
-.dark .ProseMirror table th {
-  color: #000000;
+  color: var(--color-foreground);
 }
 
 /* 플레이스홀더 스타일 */
