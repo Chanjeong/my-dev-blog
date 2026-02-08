@@ -1,13 +1,36 @@
+import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import HtmlRenderer from '@/components/post/HtmlRenderer';
-import { Post } from '@/types/post-editor';
 
 interface PostPageProps {
   params: Promise<{
     slug: string;
   }>;
 }
+
+// React cache()로 동일 요청 내 DB 쿼리 중복 제거
+const getPost = cache(async (slug: string) => {
+  try {
+    return await prisma.post.findUnique({
+      where: {
+        slug,
+        published: true,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        slug: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  } catch {
+    return null;
+  }
+});
 
 // 정적 페이지 생성을 위한 함수
 export async function generateStaticParams() {
@@ -33,72 +56,34 @@ export async function generateMetadata({ params }: PostPageProps) {
   const resolvedParams = await params;
   const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
-  try {
-    const post = await prisma.post.findUnique({
-      where: {
-        slug: decodedSlug,
-        published: true,
-      },
-      select: {
-        title: true,
-        content: true,
-        createdAt: true,
-      },
-    });
+  const post = await getPost(decodedSlug);
 
-    if (!post) {
-      notFound();
-    }
-
-    const firstParagraph =
-      post.content
-        .split('\n')
-        .find(line => line.trim().length > 0 && !line.startsWith('#'))
-        ?.replace(/[#*`]/g, '')
-        ?.trim() || '';
-
-    return {
-      title: post.title,
-      description: firstParagraph,
-      openGraph: {
-        title: post.title,
-        description: firstParagraph,
-        type: 'article',
-        publishedTime: post.createdAt.toISOString(),
-      },
-    };
-  } catch {
+  if (!post) {
     notFound();
   }
-}
 
-async function getPostBySlug(slug: string): Promise<Post | null> {
-  try {
-    const post = await prisma.post.findUnique({
-      where: {
-        slug,
-        published: true,
-      },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        slug: true,
-        published: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+  // HTML 태그 제거 → 공백 정규화 → 160자 제한
+  const description = post.content
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 160);
 
-    return post;
-  } catch {
-    return null;
-  }
+  return {
+    title: post.title,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: 'article',
+      publishedTime: post.createdAt.toISOString(),
+    },
+  };
 }
 
 // 포스트 콘텐츠 컴포넌트
 async function PostContent({ slug }: { slug: string }) {
-  const post = await getPostBySlug(slug);
+  const post = await getPost(slug);
 
   if (!post) {
     notFound();

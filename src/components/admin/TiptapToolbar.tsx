@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { Editor } from '@tiptap/react';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,9 +24,37 @@ import LinkDialog from './LinkDialog';
 
 interface TiptapToolbarProps {
   editor: Editor | null;
+  onImageUpload?: (file: File) => void;
 }
 
-export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
+interface ToolbarButtonProps {
+  editor: Editor;
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  isActive?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}
+
+function ToolbarButton({ icon: Icon, title, isActive, disabled, onClick }: ToolbarButtonProps) {
+  return (
+    <Button
+      type="button"
+      variant={isActive ? 'default' : 'ghost'}
+      size="sm"
+      onClick={e => {
+        e.preventDefault();
+        onClick();
+      }}
+      disabled={disabled}
+      title={title}
+    >
+      <Icon className="h-4 w-4" />
+    </Button>
+  );
+}
+
+export default function TiptapToolbar({ editor, onImageUpload }: TiptapToolbarProps) {
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [selectedText, setSelectedText] = useState('');
 
@@ -34,14 +62,18 @@ export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
 
   const handleLinkClick = () => {
     const { from, to } = editor.state.selection;
-    const selectedText = editor.state.doc.textBetween(from, to);
-    setSelectedText(selectedText);
+    const selected = editor.state.doc.textBetween(from, to);
+    setSelectedText(selected);
     setIsLinkDialogOpen(true);
   };
 
   const handleInsertLink = (url: string, text?: string) => {
     if (text) {
-      editor.chain().focus().insertContent(`<a href="${url}">${text}</a>`).run();
+      // Tiptap API를 사용하여 안전하게 링크 삽입 (XSS 방지)
+      const { from } = editor.state.selection;
+      editor.chain().focus().insertContent(text).run();
+      const to = from + text.length;
+      editor.chain().setTextSelection({ from, to }).setLink({ href: url }).run();
     } else {
       editor.chain().focus().setLink({ href: url }).run();
     }
@@ -50,219 +82,118 @@ export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
   // velog 방식의 서식 적용 함수
   const handleFormatWithText = (formatFn: () => void, placeholder: string) => {
     const { from, to } = editor.state.selection;
-    const selectedText = editor.state.doc.textBetween(from, to);
+    const selected = editor.state.doc.textBetween(from, to);
 
-    // 선택된 텍스트가 없거나 빈 문자열인 경우
-    if (!selectedText.trim()) {
-      // 현재 커서 위치에 플레이스홀더 텍스트 삽입
+    if (!selected.trim()) {
       editor.chain().focus().insertContent(placeholder).run();
-
-      // 삽입한 텍스트를 선택하기 위해 위치 계산
       const newFrom = from;
       const newTo = from + placeholder.length;
-
-      // 텍스트 선택
       editor.chain().setTextSelection({ from: newFrom, to: newTo }).run();
     }
 
-    // 서식 적용
     formatFn();
   };
+
+  const headingButtons = [
+    { icon: Heading1, level: 1 as const, title: '제목 1' },
+    { icon: Heading2, level: 2 as const, title: '제목 2' },
+    { icon: Heading3, level: 3 as const, title: '제목 3' },
+    { icon: Heading4, level: 4 as const, title: '제목 4' },
+  ];
+
+  const formatButtons = [
+    { icon: Bold, mark: 'bold' as const, title: '굵게', format: () => editor.chain().focus().toggleBold().run(), placeholder: '텍스트' },
+    { icon: Italic, mark: 'italic' as const, title: '기울임', format: () => editor.chain().focus().toggleItalic().run(), placeholder: '텍스트' },
+    { icon: Strikethrough, mark: 'strike' as const, title: '취소선', format: () => editor.chain().focus().toggleStrike().run(), placeholder: '텍스트' },
+    { icon: Code, mark: 'code' as const, title: '인라인 코드', format: () => editor.chain().focus().toggleCode().run(), placeholder: '코드' },
+  ];
 
   return (
     <div className="border-b border-gray-200 dark:border-gray-700 p-2 flex flex-wrap gap-1">
       {/* 실행취소/재실행 */}
       <div className="flex border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().undo().run();
-          }}
-          disabled={!editor.can().chain().focus().undo().run()}
+        <ToolbarButton
+          editor={editor}
+          icon={Undo}
           title="실행취소"
-        >
-          <Undo className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().redo().run();
-          }}
-          disabled={!editor.can().chain().focus().redo().run()}
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().chain().focus().undo().run()}
+        />
+        <ToolbarButton
+          editor={editor}
+          icon={Redo}
           title="재실행"
-        >
-          <Redo className="h-4 w-4" />
-        </Button>
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().chain().focus().redo().run()}
+        />
       </div>
 
       {/* 제목 */}
       <div className="flex border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
-        <Button
-          type="button"
-          variant={editor.isActive('heading', { level: 1 }) ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().toggleHeading({ level: 1 }).run();
-          }}
-          title="제목 1"
-        >
-          <Heading1 className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('heading', { level: 2 }) ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().toggleHeading({ level: 2 }).run();
-          }}
-          title="제목 2"
-        >
-          <Heading2 className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('heading', { level: 3 }) ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().toggleHeading({ level: 3 }).run();
-          }}
-          title="제목 3"
-        >
-          <Heading3 className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('heading', { level: 4 }) ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().toggleHeading({ level: 4 }).run();
-          }}
-          title="제목 4"
-        >
-          <Heading4 className="h-4 w-4" />
-        </Button>
+        {headingButtons.map(({ icon, level, title }) => (
+          <ToolbarButton
+            key={level}
+            editor={editor}
+            icon={icon}
+            title={title}
+            isActive={editor.isActive('heading', { level })}
+            onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+          />
+        ))}
       </div>
 
       {/* 텍스트 서식 */}
       <div className="flex border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
-        <Button
-          type="button"
-          variant={editor.isActive('bold') ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            handleFormatWithText(() => editor.chain().focus().toggleBold().run(), '텍스트');
-          }}
-          title="굵게"
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('italic') ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            handleFormatWithText(() => editor.chain().focus().toggleItalic().run(), '텍스트');
-          }}
-          title="기울임"
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('strike') ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            handleFormatWithText(() => editor.chain().focus().toggleStrike().run(), '텍스트');
-          }}
-          title="취소선"
-        >
-          <Strikethrough className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('code') ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            handleFormatWithText(() => editor.chain().focus().toggleCode().run(), '코드');
-          }}
-          title="인라인 코드"
-        >
-          <Code className="h-4 w-4" />
-        </Button>
+        {formatButtons.map(({ icon, mark, title, format, placeholder }) => (
+          <ToolbarButton
+            key={mark}
+            editor={editor}
+            icon={icon}
+            title={title}
+            isActive={editor.isActive(mark)}
+            onClick={() => handleFormatWithText(format, placeholder)}
+          />
+        ))}
       </div>
 
       {/* 목록 */}
       <div className="flex border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
-        <Button
-          type="button"
-          variant={editor.isActive('bulletList') ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().toggleBulletList().run();
-          }}
+        <ToolbarButton
+          editor={editor}
+          icon={List}
           title="불릿 목록"
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive('orderedList') ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().toggleOrderedList().run();
-          }}
+          isActive={editor.isActive('bulletList')}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        />
+        <ToolbarButton
+          editor={editor}
+          icon={ListOrdered}
           title="번호 목록"
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
+          isActive={editor.isActive('orderedList')}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        />
       </div>
 
       {/* 인용문 */}
       <div className="flex border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
-        <Button
-          type="button"
-          variant={editor.isActive('blockquote') ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            editor.chain().focus().toggleBlockquote().run();
-          }}
+        <ToolbarButton
+          editor={editor}
+          icon={Quote}
           title="인용문"
-        >
-          <Quote className="h-4 w-4" />
-        </Button>
+          isActive={editor.isActive('blockquote')}
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        />
       </div>
 
       {/* 링크 */}
       <div className="flex border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
-        <Button
-          type="button"
-          variant={editor.isActive('link') ? 'default' : 'ghost'}
-          size="sm"
-          onClick={e => {
-            e.preventDefault();
-            handleLinkClick();
-          }}
+        <ToolbarButton
+          editor={editor}
+          icon={Link}
           title="링크 삽입"
-        >
-          <Link className="h-4 w-4" />
-        </Button>
+          isActive={editor.isActive('link')}
+          onClick={handleLinkClick}
+        />
       </div>
 
       {/* 이미지 업로드 */}
@@ -276,11 +207,10 @@ export default function TiptapToolbar({ editor }: TiptapToolbarProps) {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*';
-            input.onchange = e => {
-              const file = (e.target as HTMLInputElement).files?.[0];
-              if (file) {
-                const event = new CustomEvent('imageUpload', { detail: { file } });
-                window.dispatchEvent(event);
+            input.onchange = ev => {
+              const file = (ev.target as HTMLInputElement).files?.[0];
+              if (file && onImageUpload) {
+                onImageUpload(file);
               }
             };
             input.click();

@@ -10,27 +10,36 @@ export interface ImageUploadResult {
 export const useImageUpload = () => {
   // 이미지 압축 함수 (내부 함수)
   const compressImage = (file: File): Promise<File> => {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('이미지를 로드할 수 없습니다.'));
+      };
 
       img.onload = () => {
-        URL.revokeObjectURL(img.src);
+        URL.revokeObjectURL(objectUrl);
         const maxWidth = 1200;
         const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
         canvas.width = img.width * ratio;
         canvas.height = img.height * ratio;
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+        const isPng = file.type === 'image/png';
+        const outputType = isPng ? 'image/png' : 'image/jpeg';
+
         canvas.toBlob(
-          blob => resolve(blob ? new File([blob], file.name, { type: 'image/jpeg' }) : file),
-          'image/jpeg',
-          0.8
+          blob => resolve(blob ? new File([blob], file.name, { type: outputType }) : file),
+          outputType,
+          isPng ? undefined : 0.8
         );
       };
 
-      img.src = URL.createObjectURL(file);
+      img.src = objectUrl;
     });
   };
 

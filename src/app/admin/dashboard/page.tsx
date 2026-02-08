@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, FileText, Settings, Upload } from 'lucide-react';
+import { Plus, FileText, Settings, Upload, Home } from 'lucide-react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
@@ -68,9 +68,17 @@ export default async function AdminDashboard() {
     <div className="min-h-screen bg-background">
       <main className="pt-6 px-6">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">관리자 대시보드</h1>
-            <p className="text-muted-foreground">블로그와 파일을 관리하세요</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">관리자 대시보드</h1>
+              <p className="text-muted-foreground">블로그와 파일을 관리하세요</p>
+            </div>
+            <Link href="/">
+              <Button variant="outline" size="sm">
+                <Home className="h-4 w-4 mr-2" />
+                홈으로
+              </Button>
+            </Link>
           </div>
 
           {/* 통계 카드 */}

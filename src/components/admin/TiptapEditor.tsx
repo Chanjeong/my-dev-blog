@@ -241,20 +241,6 @@ export default function TiptapEditor({
     };
   }, [editor, handleImageUpload]);
 
-  // 이미지 업로드 이벤트 리스너
-  useEffect(() => {
-    const handleImageUploadEvent = (event: CustomEvent) => {
-      const file = event.detail.file;
-      if (file) {
-        handleImageUpload(file);
-      }
-    };
-
-    window.addEventListener('imageUpload', handleImageUploadEvent as EventListener);
-    return () => {
-      window.removeEventListener('imageUpload', handleImageUploadEvent as EventListener);
-    };
-  }, [handleImageUpload]);
 
   if (!mounted || !editor) {
     return (
@@ -266,7 +252,7 @@ export default function TiptapEditor({
 
   return (
     <div className="space-y-4">
-      <TiptapToolbar editor={editor} />
+      <TiptapToolbar editor={editor} onImageUpload={handleImageUpload} />
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <EditorContent editor={editor} />
       </div>

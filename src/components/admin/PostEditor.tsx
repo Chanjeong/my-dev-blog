@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ export type PostEditorProps = {
 
 export default function PostEditor({ initialData }: PostEditorProps) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState<PostFormState, FormData>(savePostAction, {
     success: false,
     error: null,
@@ -33,20 +34,11 @@ export default function PostEditor({ initialData }: PostEditorProps) {
 
   // 포스트 저장 공통 로직
   const handleSavePost = (isPublished: boolean) => {
-    dispatch({
-      type: 'SET_FIELD',
-      field: 'published',
-      value: isPublished,
-    });
-
-    setTimeout(() => {
-      const form = document.querySelector('form');
-      if (form) {
-        const hiddenInput = form.querySelector('input[name="published"]') as HTMLInputElement;
-        if (hiddenInput) hiddenInput.value = isPublished.toString();
-        form.requestSubmit();
-      }
-    }, 100);
+    dispatch({ type: 'SET_FIELD', field: 'published', value: isPublished });
+    if (!formRef.current) return;
+    const input = formRef.current.querySelector('input[name="published"]') as HTMLInputElement;
+    if (input) input.value = isPublished.toString();
+    formRef.current.requestSubmit();
   };
 
   useEffect(() => {
@@ -67,7 +59,7 @@ export default function PostEditor({ initialData }: PostEditorProps) {
             </div>
           </div>
 
-          <form action={formAction} className="space-y-6">
+          <form ref={formRef} action={formAction} className="space-y-6">
             {/* 숨겨진 필드들 */}
             <input type="hidden" name="postId" value={initialData?.id || ''} />
             <input type="hidden" name="published" value={formData.published.toString()} />
