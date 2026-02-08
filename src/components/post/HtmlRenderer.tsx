@@ -24,8 +24,70 @@ interface HtmlRendererProps {
   content: string;
 }
 
+// 코드 첫 줄에 언어 이름만 있는 경우 추출
+const LANGUAGE_MAP: Record<string, string> = {
+  javascript: 'javascript',
+  js: 'javascript',
+  typescript: 'typescript',
+  ts: 'typescript',
+  jsx: 'javascript',
+  tsx: 'typescript',
+  python: 'python',
+  py: 'python',
+  html: 'markup',
+  css: 'css',
+  json: 'json',
+  bash: 'bash',
+  sh: 'bash',
+  shell: 'bash',
+  java: 'java',
+  go: 'go',
+  rust: 'rust',
+  sql: 'sql',
+  yaml: 'yaml',
+  yml: 'yaml',
+  markdown: 'markdown',
+  md: 'markdown',
+};
+
+function extractLanguageFromFirstLine(code: string): {
+  language: string | null;
+  cleanCode: string;
+} {
+  const lines = code.split('\n');
+  const firstLine = lines[0].trim().toLowerCase();
+
+  if (LANGUAGE_MAP[firstLine]) {
+    return {
+      language: LANGUAGE_MAP[firstLine],
+      cleanCode: lines.slice(1).join('\n'),
+    };
+  }
+
+  return { language: null, cleanCode: code };
+}
+
 function detectLanguage(code: string): string {
-  // Python 감지 (Python 고유 패턴)
+  // JavaScript/TypeScript 키워드 체크 (JSX 포함 코드 우선 감지)
+  const hasJsKeywords =
+    /\b(?:import|export|const|let|var|function|return|class|extends|async|await|require)\b/.test(
+      code
+    );
+
+  // TypeScript 고유 패턴
+  if (
+    /\b(?:interface|type|enum)\b/.test(code) ||
+    /:\s*(?:string|number|boolean)/.test(code)
+  ) {
+    return 'typescript';
+  }
+
+  // JS 키워드가 있으면 HTML 태그가 있어도 JavaScript (JSX)
+  if (hasJsKeywords) {
+    return 'javascript';
+  }
+
+  // Python 감지
   if (
     /\bdef\s+\w+\s*\(/.test(code) ||
     /\bfrom\s+\w+\s+import\b/.test(code) ||
@@ -36,13 +98,20 @@ function detectLanguage(code: string): string {
     return 'python';
   }
 
-  // HTML 감지
-  if (/<\/?(?:div|span|html|head|body|p|a|img|ul|ol|li|table|form|input)\b/.test(code)) {
+  // HTML 감지 (순수 HTML만)
+  if (
+    /<\/?(?:div|span|html|head|body|p|a|img|ul|ol|li|table|form|input)\b/.test(
+      code
+    )
+  ) {
     return 'markup';
   }
 
   // CSS 감지
-  if (/[.#][\w-]+\s*\{/.test(code) || /@(?:media|keyframes|import)\b/.test(code)) {
+  if (
+    /[.#][\w-]+\s*\{/.test(code) ||
+    /@(?:media|keyframes|import)\b/.test(code)
+  ) {
     return 'css';
   }
 
@@ -52,22 +121,26 @@ function detectLanguage(code: string): string {
   }
 
   // Bash 감지
-  if (/^(?:#!\/bin\/(?:ba)?sh|(?:\$|>)\s)/.test(code) || /\b(?:echo|sudo|apt|npm|yarn|cd|ls|mkdir|chmod)\b/.test(code)) {
+  if (
+    /^(?:#!\/bin\/(?:ba)?sh|(?:\$|>)\s)/.test(code) ||
+    /\b(?:echo|sudo|apt|npm|yarn|cd|ls|mkdir|chmod)\b/.test(code)
+  ) {
     return 'bash';
   }
 
   // SQL 감지
-  if (/\b(?:SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE)\b/i.test(code)) {
+  if (
+    /\b(?:SELECT|INSERT|UPDATE|DELETE|CREATE\s+TABLE|ALTER\s+TABLE|DROP\s+TABLE)\b/i.test(
+      code
+    )
+  ) {
     return 'sql';
   }
 
-  // TypeScript 감지
-  if (/\b(?:interface|type|enum)\b/.test(code) || /:\s*(?:string|number|boolean)/.test(code)) {
-    return 'typescript';
-  }
-
   // Java 감지
-  if (/\bpublic\s+(?:static\s+)?(?:void|class|int|String)\b/.test(code)) {
+  if (
+    /\bpublic\s+(?:static\s+)?(?:void|class|int|String)\b/.test(code)
+  ) {
     return 'java';
   }
 
@@ -77,7 +150,11 @@ function detectLanguage(code: string): string {
   }
 
   // Rust 감지
-  if (/\bfn\s+\w+\s*\(/.test(code) || /\blet\s+mut\b/.test(code) || /\bimpl\s+\w+/.test(code)) {
+  if (
+    /\bfn\s+\w+\s*\(/.test(code) ||
+    /\blet\s+mut\b/.test(code) ||
+    /\bimpl\s+\w+/.test(code)
+  ) {
     return 'rust';
   }
 
@@ -107,16 +184,25 @@ export default function HtmlRenderer({ content }: HtmlRendererProps) {
 
         const preElement = codeElement.parentElement as HTMLElement;
         const currentClass = codeElement.className;
+        const rawCode = codeElement.textContent || '';
 
-        // 언어 감지 - language-none이나 빈 경우만 처리
-        if (
+        // 첫 줄에 언어 이름이 있으면 추출하고 제거
+        const { language: firstLineLanguage, cleanCode } =
+          extractLanguageFromFirstLine(rawCode);
+
+        if (firstLineLanguage) {
+          codeElement.textContent = cleanCode;
+          codeElement.className = `language-${firstLineLanguage}`;
+          if (preElement) {
+            preElement.className = `language-${firstLineLanguage}`;
+          }
+        } else if (
           currentClass.includes('language-none') ||
           currentClass === 'language-' ||
           !currentClass.includes('language-')
         ) {
-          const code = codeElement.textContent || '';
-          const detectedLang = detectLanguage(code);
-
+          // 언어 자동 감지
+          const detectedLang = detectLanguage(rawCode);
           codeElement.className = `language-${detectedLang}`;
           if (preElement) {
             preElement.className = `language-${detectedLang}`;

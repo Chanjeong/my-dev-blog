@@ -119,7 +119,7 @@
   border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
   padding: 1rem;
-  color: var(--foreground);
+  color: #ccc;
   margin: 1rem 0;
   overflow-x: auto;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -154,7 +154,7 @@ pre[class*='language-'] {
 }
 
 .ProseMirror pre code .token.punctuation {
-  color: #d73a49 !important;
+  color: #ccc !important;
 }
 
 .ProseMirror pre code .token.property,
@@ -164,35 +164,47 @@ pre[class*='language-'] {
 .ProseMirror pre code .token.constant,
 .ProseMirror pre code .token.symbol,
 .ProseMirror pre code .token.deleted {
-  color: #005cc5 !important;
+  color: #f08d49 !important;
 }
 
 .ProseMirror pre code .token.atrule,
-.ProseMirror pre code .token.attr-value,
 .ProseMirror pre code .token.keyword {
-  color: #6f42c1 !important;
-  font-weight: bold;
+  color: #cc99cd !important;
 }
 
 .ProseMirror pre code .token.function,
 .ProseMirror pre code .token.class-name {
-  color: #6f42c1 !important;
-  font-weight: bold;
+  color: #f8c555 !important;
+}
+
+.ProseMirror pre code .token.string,
+.ProseMirror pre code .token.char,
+.ProseMirror pre code .token.attr-value,
+.ProseMirror pre code .token.inserted {
+  color: #e3ceab !important;
+}
+
+.ProseMirror pre code .token.variable,
+.ProseMirror pre code .token.builtin {
+  color: #f08d49 !important;
+}
+
+.ProseMirror pre code .token.regex,
+.ProseMirror pre code .token.important {
+  color: #e90 !important;
 }
 
 .ProseMirror pre code .token.operator,
 .ProseMirror pre code .token.entity,
 .ProseMirror pre code .token.url {
-  color: #d73a49 !important;
+  color: #67cdcc !important;
   background: transparent;
 }
 
 .ProseMirror pre code {
   background: transparent;
-  color: inherit;
   padding: 0;
   border-radius: 0;
-  color: var(--foreground);
 }
 
 /* 링크 스타일 */
@@ -219,9 +231,28 @@ pre[class*='language-'] {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
-/* 테이블 헤더 텍스트 색상 */
+/* 테이블 스타일 */
+.ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.ProseMirror table th,
+.ProseMirror table td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
 .ProseMirror table th {
-  color: var(--color-foreground);
+  background: var(--color-muted);
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+
+.ProseMirror table td {
+  color: hsl(var(--foreground));
 }
 
 /* 플레이스홀더 스타일 */
