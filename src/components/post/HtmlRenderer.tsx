@@ -19,6 +19,8 @@ import 'prismjs/components/prism-rust';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markdown';
+import 'prismjs/components/prism-jsx';
+import 'prismjs/components/prism-tsx';
 
 interface HtmlRendererProps {
   content: string;
@@ -30,8 +32,8 @@ const LANGUAGE_MAP: Record<string, string> = {
   js: 'javascript',
   typescript: 'typescript',
   ts: 'typescript',
-  jsx: 'javascript',
-  tsx: 'typescript',
+  jsx: 'jsx',
+  tsx: 'tsx',
   python: 'python',
   py: 'python',
   html: 'markup',
@@ -74,17 +76,26 @@ function detectLanguage(code: string): string {
       code
     );
 
+  // JSX 패턴 감지: 대문자 시작 태그, React 속성, 또는 JSX 닫기 태그
+  const hasJsxPatterns =
+    /<[A-Z]\w*[\s/>]/.test(code) ||
+    /\b(?:className|onClick|onChange|onSubmit|useState|useEffect|useRef|useCallback|useMemo)\b/.test(code) ||
+    /<\/[A-Z]\w*>/.test(code) ||
+    /\bReact\b/.test(code);
+
   // TypeScript 고유 패턴
-  if (
+  const hasTypeScript =
     /\b(?:interface|type|enum)\b/.test(code) ||
-    /:\s*(?:string|number|boolean)/.test(code)
-  ) {
-    return 'typescript';
+    /:\s*(?:string|number|boolean|React\.FC|JSX\.Element)/.test(code) ||
+    /<\w+>(?:\(|,)/.test(code);
+
+  if (hasTypeScript) {
+    return hasJsxPatterns ? 'tsx' : 'typescript';
   }
 
-  // JS 키워드가 있으면 HTML 태그가 있어도 JavaScript (JSX)
+  // JS 키워드가 있으면 JSX 여부 판별
   if (hasJsKeywords) {
-    return 'javascript';
+    return hasJsxPatterns ? 'jsx' : 'javascript';
   }
 
   // Python 감지
@@ -165,58 +176,84 @@ export default function HtmlRenderer({ content }: HtmlRendererProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (contentRef.current) {
-      const links = contentRef.current.querySelectorAll('a');
-      links.forEach(link => {
-        link.setAttribute('target', '_blank');
-        link.setAttribute('rel', 'noopener noreferrer');
-      });
+    if (!contentRef.current) return;
 
-      // 코드 블록 하이라이팅 - 이미 처리된 것은 스킵
-      const codeBlocks = contentRef.current.querySelectorAll('pre code');
-      codeBlocks.forEach(block => {
-        const codeElement = block as HTMLElement;
+    const links = contentRef.current.querySelectorAll('a');
+    links.forEach(link => {
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+    });
 
-        // 이미 Prism이 처리했으면 (span.token이 있으면) 스킵
-        if (codeElement.querySelector('.token')) {
-          return;
-        }
+    // 이중 requestAnimationFrame으로 DOM이 완전히 렌더링된 후 하이라이팅 실행
+    let outerRafId: number;
+    let innerRafId: number;
 
-        const preElement = codeElement.parentElement as HTMLElement;
-        const currentClass = codeElement.className;
-        const rawCode = codeElement.textContent || '';
+    outerRafId = requestAnimationFrame(() => {
+      innerRafId = requestAnimationFrame(() => {
+        if (!contentRef.current) return;
 
-        // 첫 줄에 언어 이름이 있으면 추출하고 제거
-        const { language: firstLineLanguage, cleanCode } =
-          extractLanguageFromFirstLine(rawCode);
-
-        if (firstLineLanguage) {
-          codeElement.textContent = cleanCode;
-          codeElement.className = `language-${firstLineLanguage}`;
-          if (preElement) {
-            preElement.className = `language-${firstLineLanguage}`;
+        // <pre> 안에 <code>가 없는 경우 <code>로 감싸기
+        const preElements = contentRef.current.querySelectorAll('pre');
+        preElements.forEach(pre => {
+          if (!pre.querySelector('code')) {
+            const code = document.createElement('code');
+            code.textContent = pre.textContent || '';
+            pre.textContent = '';
+            pre.appendChild(code);
           }
-        } else if (
-          currentClass.includes('language-none') ||
-          currentClass === 'language-' ||
-          !currentClass.includes('language-')
-        ) {
-          // 언어 자동 감지
-          const detectedLang = detectLanguage(rawCode);
-          codeElement.className = `language-${detectedLang}`;
-          if (preElement) {
-            preElement.className = `language-${detectedLang}`;
-          }
-        }
+        });
 
-        // Prism 하이라이팅 실행
-        try {
-          Prism.highlightElement(codeElement);
-        } catch (e) {
-          console.warn('Prism highlighting failed:', e);
-        }
+        // 코드 블록 하이라이팅 - 이미 처리된 것은 스킵
+        const codeBlocks = contentRef.current.querySelectorAll('pre code');
+        codeBlocks.forEach(block => {
+          const codeElement = block as HTMLElement;
+
+          // 이미 Prism이 처리했으면 (span.token이 있으면) 스킵
+          if (codeElement.querySelector('.token')) {
+            return;
+          }
+
+          const preElement = codeElement.parentElement as HTMLElement;
+          const currentClass = codeElement.className;
+          const rawCode = codeElement.textContent || '';
+
+          // 첫 줄에 언어 이름이 있으면 추출하고 제거
+          const { language: firstLineLanguage, cleanCode } =
+            extractLanguageFromFirstLine(rawCode);
+
+          if (firstLineLanguage) {
+            codeElement.textContent = cleanCode;
+            codeElement.className = `language-${firstLineLanguage}`;
+            if (preElement) {
+              preElement.className = `language-${firstLineLanguage}`;
+            }
+          } else if (
+            currentClass.includes('language-none') ||
+            currentClass === 'language-' ||
+            !currentClass.includes('language-')
+          ) {
+            // 언어 자동 감지
+            const detectedLang = detectLanguage(rawCode);
+            codeElement.className = `language-${detectedLang}`;
+            if (preElement) {
+              preElement.className = `language-${detectedLang}`;
+            }
+          }
+
+          // Prism 하이라이팅 실행
+          try {
+            Prism.highlightElement(codeElement);
+          } catch (e) {
+            console.warn('Prism highlighting failed:', e);
+          }
+        });
       });
-    }
+    });
+
+    return () => {
+      cancelAnimationFrame(outerRafId);
+      cancelAnimationFrame(innerRafId);
+    };
   }, [content]);
 
   return (

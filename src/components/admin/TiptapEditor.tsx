@@ -166,6 +166,26 @@ export default function TiptapEditor({
         }
       }
 
+      // 텍스트 데이터를 먼저 확인하여 코드 감지 (HTML보다 우선)
+      const text = clipboardData.getData('text/plain');
+      if (text && text.trim().length > 0) {
+        // 코드처럼 보이면 코드블록으로 변환 (HTML 경로보다 우선)
+        if (isCodeLike(text)) {
+          event.preventDefault();
+          event.stopPropagation();
+          const { state } = editor.view;
+          const { tr } = state;
+          const codeBlock = state.schema.nodes.codeBlock;
+
+          if (codeBlock) {
+            const node = codeBlock.create(null, state.schema.text(text));
+            const transaction = tr.replaceSelectionWith(node);
+            editor.view.dispatch(transaction);
+          }
+          return;
+        }
+      }
+
       // HTML 데이터 확인
       const htmlData = clipboardData.getData('text/html');
       const hasHtml = htmlData && htmlData.trim().length > 0;
@@ -191,8 +211,7 @@ export default function TiptapEditor({
         }
       }
 
-      // 텍스트 데이터 확인
-      const text = clipboardData.getData('text/plain');
+      // 텍스트 데이터 확인 (마크다운)
       if (text && text.trim().length > 0) {
         if (hasMarkdownSyntax(text)) {
           event.preventDefault();
@@ -211,22 +230,6 @@ export default function TiptapEditor({
             dispatch(tr);
           } catch {
             // 에러 발생 시 기본 동작 사용
-          }
-          return;
-        }
-
-        // 코드처럼 보이면 코드블록으로 변환
-        if (isCodeLike(text)) {
-          event.preventDefault();
-          event.stopPropagation();
-          const { state } = editor.view;
-          const { tr } = state;
-          const codeBlock = state.schema.nodes.codeBlock;
-
-          if (codeBlock) {
-            const node = codeBlock.create(null, state.schema.text(text));
-            const transaction = tr.replaceSelectionWith(node);
-            editor.view.dispatch(transaction);
           }
           return;
         }

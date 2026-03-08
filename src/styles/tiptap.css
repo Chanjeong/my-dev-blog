@@ -144,60 +144,143 @@ pre[class*='language-'] {
   text-shadow: none;
 }
 
-/* Prism.js 구문 강조 색상 - CSS 변수 사용으로 다크모드 자동 적용 */
+/* Prism.js 구문 강조 색상 - One Dark (Velog 스타일) 팔레트 */
 .ProseMirror pre code .token.comment,
 .ProseMirror pre code .token.prolog,
 .ProseMirror pre code .token.doctype,
 .ProseMirror pre code .token.cdata {
-  color: #6a737d !important;
+  color: #5c6370 !important;
   font-style: italic;
 }
 
 .ProseMirror pre code .token.punctuation {
-  color: #ccc !important;
+  color: #abb2bf !important;
 }
 
-.ProseMirror pre code .token.property,
 .ProseMirror pre code .token.tag,
+.ProseMirror pre code .token.deleted {
+  color: #e06c75 !important;
+}
+
 .ProseMirror pre code .token.boolean,
 .ProseMirror pre code .token.number,
 .ProseMirror pre code .token.constant,
-.ProseMirror pre code .token.symbol,
-.ProseMirror pre code .token.deleted {
-  color: #f08d49 !important;
+.ProseMirror pre code .token.symbol {
+  color: #d19a66 !important;
+}
+
+.ProseMirror pre code .token.property {
+  color: #e06c75 !important;
 }
 
 .ProseMirror pre code .token.atrule,
 .ProseMirror pre code .token.keyword {
-  color: #cc99cd !important;
+  color: #c678dd !important;
 }
 
-.ProseMirror pre code .token.function,
+.ProseMirror pre code .token.function {
+  color: #61afef !important;
+}
+
 .ProseMirror pre code .token.class-name {
-  color: #f8c555 !important;
+  color: #e5c07b !important;
 }
 
 .ProseMirror pre code .token.string,
 .ProseMirror pre code .token.char,
 .ProseMirror pre code .token.attr-value,
 .ProseMirror pre code .token.inserted {
-  color: #e3ceab !important;
+  color: #98c379 !important;
+}
+
+.ProseMirror pre code .token.attr-name {
+  color: #d19a66 !important;
 }
 
 .ProseMirror pre code .token.variable,
 .ProseMirror pre code .token.builtin {
-  color: #f08d49 !important;
+  color: #e06c75 !important;
 }
 
 .ProseMirror pre code .token.regex,
 .ProseMirror pre code .token.important {
-  color: #e90 !important;
+  color: #e5c07b !important;
 }
 
 .ProseMirror pre code .token.operator,
 .ProseMirror pre code .token.entity,
 .ProseMirror pre code .token.url {
-  color: #67cdcc !important;
+  color: #56b6c2 !important;
+  background: transparent;
+}
+
+/* 블로그 뷰어 전용 토큰 스타일 (.ProseMirror 밖에서도 작동) */
+pre code .token.comment,
+pre code .token.prolog,
+pre code .token.doctype,
+pre code .token.cdata {
+  color: #5c6370 !important;
+  font-style: italic;
+}
+
+pre code .token.punctuation {
+  color: #abb2bf !important;
+}
+
+pre code .token.tag,
+pre code .token.deleted {
+  color: #e06c75 !important;
+}
+
+pre code .token.boolean,
+pre code .token.number,
+pre code .token.constant,
+pre code .token.symbol {
+  color: #d19a66 !important;
+}
+
+pre code .token.property {
+  color: #e06c75 !important;
+}
+
+pre code .token.atrule,
+pre code .token.keyword {
+  color: #c678dd !important;
+}
+
+pre code .token.function {
+  color: #61afef !important;
+}
+
+pre code .token.class-name {
+  color: #e5c07b !important;
+}
+
+pre code .token.string,
+pre code .token.char,
+pre code .token.attr-value,
+pre code .token.inserted {
+  color: #98c379 !important;
+}
+
+pre code .token.attr-name {
+  color: #d19a66 !important;
+}
+
+pre code .token.variable,
+pre code .token.builtin {
+  color: #e06c75 !important;
+}
+
+pre code .token.regex,
+pre code .token.important {
+  color: #e5c07b !important;
+}
+
+pre code .token.operator,
+pre code .token.entity,
+pre code .token.url {
+  color: #56b6c2 !important;
   background: transparent;
 }
 

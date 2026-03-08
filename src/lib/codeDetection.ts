@@ -15,8 +15,6 @@ export function hasMarkdownSyntax(text: string): boolean {
     /!\[.*?\]\(.*?\)/.test(text) ||
     /\[.*?\]\(.*?\)/.test(text) ||
     /\*\*.*?\*\*/.test(text) ||
-    /\*.*?\*/.test(text) ||
-    /`.*?`/.test(text) ||
     /^>\s?/.test(text) ||
     /^[-*_]{3,}$/.test(text)
   );
@@ -29,13 +27,13 @@ export function isCodeLike(text: string): boolean {
   // 너무 짧으면 코드 아님
   if (text.length < 10) return false;
 
-  // 마크다운 문법이 있으면 코드가 아님
-  if (hasMarkdownSyntax(text)) return false;
+  // 코드 펜스(```)가 있으면 마크다운이므로 코드 감지 스킵
+  if (/```/.test(text)) return false;
 
   let score = 0;
 
-  // JavaScript 키워드
-  if (/\b(const|let|var|function|class|import|export|return|async|await|if|else|for|while)\b/.test(text)) {
+  // JavaScript/TypeScript 키워드
+  if (/\b(const|let|var|function|class|import|export|return|async|await|if|else|for|while|switch|case|break|continue|try|catch|throw|new|this|typeof|instanceof)\b/.test(text)) {
     score += 3;
   }
 
@@ -49,8 +47,33 @@ export function isCodeLike(text: string): boolean {
     score += 2;
   }
 
+  // 중괄호만 있어도 점수 부여 (Python, Go 등 세미콜론 없는 언어)
+  if (/\{[\s\S]*\}/.test(text) && !(/;/.test(text))) {
+    score += 1;
+  }
+
   // JavaScript 연산자
   if (/=>|===|!==|\+\+|--/.test(text)) {
+    score += 2;
+  }
+
+  // 화살표 함수 패턴
+  if (/\)\s*=>\s*[{(]/.test(text) || /=>\s*\{/.test(text)) {
+    score += 2;
+  }
+
+  // JSX/TSX 패턴
+  if (/<[A-Z]\w+[\s/>]/.test(text) || /className=/.test(text) || /onClick=/.test(text)) {
+    score += 2;
+  }
+
+  // Python 패턴
+  if (/\bdef\s+\w+\s*\(/.test(text) || /\bself\./.test(text) || /\belif\b/.test(text) || /\bfrom\s+\w+\s+import\b/.test(text)) {
+    score += 3;
+  }
+
+  // TypeScript 패턴
+  if (/\b(interface|type|enum)\b/.test(text) || /:\s*(string|number|boolean|void)\b/.test(text)) {
     score += 2;
   }
 
@@ -59,6 +82,6 @@ export function isCodeLike(text: string): boolean {
     score += 1;
   }
 
-  // 점수가 5 이상이면 코드로 판단
-  return score >= 5;
+  // 점수가 4 이상이면 코드로 판단
+  return score >= 4;
 }
