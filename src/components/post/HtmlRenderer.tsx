@@ -185,10 +185,9 @@ export default function HtmlRenderer({ content }: HtmlRendererProps) {
     });
 
     // 이중 requestAnimationFrame으로 DOM이 완전히 렌더링된 후 하이라이팅 실행
-    let outerRafId: number;
     let innerRafId: number;
 
-    outerRafId = requestAnimationFrame(() => {
+    const outerRafId = requestAnimationFrame(() => {
       innerRafId = requestAnimationFrame(() => {
         if (!contentRef.current) return;
 
