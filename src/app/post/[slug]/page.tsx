@@ -114,7 +114,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <main className="max-w-2xl mx-auto px-6 py-16">
+      <main className="max-w-4xl mx-auto px-6 py-16">
         <PostContent slug={decodedSlug} />
       </main>
     </div>
